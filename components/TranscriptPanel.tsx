@@ -166,6 +166,7 @@ export default function TranscriptPanel() {
   } | null>(null);
   const [correctText, setCorrectText] = useState("");
   const [speakerMenuOpen, setSpeakerMenuOpen] = useState(false);
+  const [speakerTurnMenu, setSpeakerTurnMenu] = useState<number | null>(null);
   // Mirrors `correcting` so selection handlers can freeze highlights while open.
   const correctingRef = useRef(false);
 
@@ -265,6 +266,14 @@ export default function TranscriptPanel() {
       clearSelection();
     },
     [selection, assignSpeaker, clearSelection]
+  );
+
+  const assignTurnSpeaker = useCallback(
+    (wordIds: number[], speaker: number) => {
+      assignSpeaker(wordIds, speaker);
+      setSpeakerTurnMenu(null);
+    },
+    [assignSpeaker]
   );
 
   const openCorrect = useCallback(() => {
@@ -470,12 +479,55 @@ export default function TranscriptPanel() {
                 if (visible.length === 0) return null;
                 return (
                   <div key={i} className="mb-7">
-                    <div
-                      className="mb-1.5 text-[13px] font-semibold"
-                      style={{ color: speakerColor(turn.speaker) }}
+                    <Popover
+                      open={speakerTurnMenu === i}
+                      onOpenChange={(open) => setSpeakerTurnMenu(open ? i : null)}
+                      placement="bottom-start"
+                      offsetMain={6}
                     >
-                      Speaker {turn.speaker + 1}
-                    </div>
+                      <div className="mb-1.5">
+                        <PopoverTrigger>
+                          <button
+                            type="button"
+                            aria-label={`Change speaker for this transcript block, currently Speaker ${turn.speaker + 1}`}
+                            aria-haspopup="menu"
+                            aria-expanded={speakerTurnMenu === i}
+                            onClick={() => setSpeakerTurnMenu(speakerTurnMenu === i ? null : i)}
+                            className="cursor-pointer rounded-md text-[13px] font-semibold transition hover:bg-zinc-100/70 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-400 dark:hover:bg-zinc-800"
+                            style={{ color: speakerColor(turn.speaker) }}
+                          >
+                            Speaker {turn.speaker + 1}
+                          </button>
+                        </PopoverTrigger>
+                        <PopoverContent
+                          role="menu"
+                          aria-label="Change speaker for transcript block"
+                          className="z-40 w-40 p-1"
+                        >
+                          {speakerIds.map((speaker) => (
+                            <button
+                              key={speaker}
+                              type="button"
+                              role="menuitem"
+                              disabled={speaker === turn.speaker}
+                              onClick={() => assignTurnSpeaker(turn.words.map((word) => word.id), speaker)}
+                              className="flex w-full cursor-pointer items-center rounded-lg px-2.5 py-2 text-left text-[13px] font-medium text-zinc-700 hover:bg-zinc-50 disabled:cursor-default disabled:opacity-50 dark:text-zinc-200 dark:hover:bg-zinc-800"
+                            >
+                              Speaker {speaker + 1}{speaker === turn.speaker ? " (current)" : ""}
+                            </button>
+                          ))}
+                          <div className="my-1 border-t border-zinc-100 dark:border-zinc-700" />
+                          <button
+                            type="button"
+                            role="menuitem"
+                            onClick={() => assignTurnSpeaker(turn.words.map((word) => word.id), speakerIds.length > 0 ? Math.max(...speakerIds) + 1 : 0)}
+                            className="flex w-full cursor-pointer items-center rounded-lg px-2.5 py-2 text-left text-[13px] font-medium text-zinc-700 hover:bg-zinc-50 dark:text-zinc-200 dark:hover:bg-zinc-800"
+                          >
+                            New speaker
+                          </button>
+                        </PopoverContent>
+                      </div>
+                    </Popover>
                     <p className="select-text text-[15px] leading-8">
                       {visible.map((w) => {
                         const split = splitBeforeWordId.get(w.id);
