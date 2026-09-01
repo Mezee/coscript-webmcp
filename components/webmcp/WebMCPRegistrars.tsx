@@ -130,13 +130,11 @@ export function TranscriptWebMCPTools() {
   const status = useEditorStore((state) => state.status);
   const projectId = useEditorStore((state) => state.projectId);
   const exportOpen = useEditorStore((state) => state.exportOpen);
-  const selectedWordIds = useEditorStore((state) => state.selectedWordIds);
   const reviewUiVisible = useIsDesktopLayout();
   const ready = status === "ready";
-  const selectionRevision = selectedWordIds.join(",");
 
   useToolScope("transcript-read", ready ? editorReadTools : noTools, projectId ?? "unsaved");
-  useToolScope("selection-proposal", ready && !exportOpen && reviewUiVisible && selectedWordIds.length > 0 ? selectionProposalTools : noTools, selectionRevision);
+  useToolScope("selection-proposal", ready && !exportOpen && reviewUiVisible ? selectionProposalTools : noTools, projectId ?? "unsaved");
   return null;
 }
 
