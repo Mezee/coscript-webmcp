@@ -493,7 +493,7 @@ export default function TranscriptPanel() {
                             aria-haspopup="menu"
                             aria-expanded={speakerTurnMenu === i}
                             onClick={() => setSpeakerTurnMenu(speakerTurnMenu === i ? null : i)}
-                            className="cursor-pointer rounded-md text-[13px] font-semibold transition hover:bg-zinc-100/70 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-400 dark:hover:bg-zinc-800"
+                            className="cursor-pointer rounded-md text-[13px] font-semibold transition hover:bg-zinc-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-400 dark:hover:bg-zinc-800"
                             style={{ color: speakerColor(turn.speaker) }}
                           >
                             Speaker {turn.speaker + 1}
