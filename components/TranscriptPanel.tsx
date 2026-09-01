@@ -38,6 +38,7 @@ import { useTranscriptSelection } from "@/hooks/useTranscriptSelection";
 import { useCutRanges } from "@/hooks/useCutRanges";
 import { findActiveWordId, groupWordsBySpeaker } from "@/lib/transcript";
 import { TranscriptWebMCPTools } from "./webmcp/WebMCPRegistrars";
+import Popover, { PopoverContent, PopoverTrigger } from "./Popover";
 
 const SPEAKER_COLORS = [
   "#16a34a", // green
@@ -165,6 +166,7 @@ export default function TranscriptPanel() {
     containerWidth: number;
   } | null>(null);
   const [correctText, setCorrectText] = useState("");
+  const [speakerMenuOpen, setSpeakerMenuOpen] = useState(false);
   // Mirrors `correcting` so selection handlers can freeze highlights while open.
   const correctingRef = useRef(false);
 
@@ -243,6 +245,7 @@ export default function TranscriptPanel() {
     (speaker: number) => {
       if (!selection) return;
       assignSpeaker(selection.ids, speaker);
+      setSpeakerMenuOpen(false);
       clearSelection();
     },
     [selection, assignSpeaker, clearSelection]
@@ -505,28 +508,59 @@ export default function TranscriptPanel() {
                   Restore
                 </button>
               )}
-              <label className="flex items-center gap-1 rounded-lg px-1.5 py-1 text-zinc-700 dark:text-zinc-200">
-                <UserRound size={13} className="shrink-0 text-zinc-500 dark:text-zinc-400" />
-                <span className="sr-only">Assign speaker</span>
-                <select
-                  defaultValue=""
-                  aria-label="Assign selected words to a speaker"
-                  onMouseDown={(event) => event.stopPropagation()}
-                  onChange={(event) => {
-                    const value = event.target.value;
-                    if (value) assignSelectionSpeaker(Number(value));
-                  }}
-                  className="h-7 max-w-28 cursor-pointer rounded-md bg-transparent px-1 text-[12px] font-medium outline-none hover:bg-zinc-100 dark:hover:bg-zinc-700"
-                >
-                  <option value="" disabled>Speaker</option>
-                  {speakerIds.map((speaker) => (
-                    <option key={speaker} value={speaker}>Speaker {speaker + 1}</option>
-                  ))}
-                  <option value={speakerIds.length > 0 ? Math.max(...speakerIds) + 1 : 0}>
-                    New speaker
-                  </option>
-                </select>
-              </label>
+              <Popover
+                open={speakerMenuOpen}
+                onOpenChange={setSpeakerMenuOpen}
+                placement="top-start"
+                offsetMain={8}
+              >
+                <div>
+                  <PopoverTrigger>
+                    <button
+                      type="button"
+                      aria-label="Assign selected words to a speaker"
+                      aria-haspopup="menu"
+                      aria-expanded={speakerMenuOpen}
+                      onMouseDown={(event) => event.stopPropagation()}
+                      onClick={() => setSpeakerMenuOpen((open) => !open)}
+                      className="flex cursor-pointer items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-[13px] font-medium text-zinc-700 transition hover:bg-zinc-100 dark:text-zinc-200 dark:hover:bg-zinc-700"
+                    >
+                      <UserRound size={13} />
+                      Speaker
+                    </button>
+                  </PopoverTrigger>
+                  <PopoverContent
+                    role="menu"
+                    aria-label="Assign speaker"
+                    className="z-40 w-36 p-1"
+                  >
+                    {speakerIds.map((speaker) => (
+                      <button
+                        key={speaker}
+                        type="button"
+                        role="menuitem"
+                        onClick={() => assignSelectionSpeaker(speaker)}
+                        className="flex w-full cursor-pointer items-center rounded-lg px-2.5 py-2 text-left text-[13px] font-medium text-zinc-700 transition hover:bg-zinc-50 dark:text-zinc-200 dark:hover:bg-zinc-800"
+                      >
+                        Speaker {speaker + 1}
+                      </button>
+                    ))}
+                    <div className="my-1 border-t border-zinc-100 dark:border-zinc-700" />
+                    <button
+                      type="button"
+                      role="menuitem"
+                      onClick={() =>
+                        assignSelectionSpeaker(
+                          speakerIds.length > 0 ? Math.max(...speakerIds) + 1 : 0
+                        )
+                      }
+                      className="flex w-full cursor-pointer items-center rounded-lg px-2.5 py-2 text-left text-[13px] font-medium text-zinc-700 transition hover:bg-zinc-50 dark:text-zinc-200 dark:hover:bg-zinc-800"
+                    >
+                      New speaker
+                    </button>
+                  </PopoverContent>
+                </div>
+              </Popover>
               <button
                 onClick={openCorrect}
                 className="flex cursor-pointer items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-[13px] font-medium text-zinc-700 transition hover:bg-zinc-100 dark:text-zinc-200 dark:hover:bg-zinc-700"
