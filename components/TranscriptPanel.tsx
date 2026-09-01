@@ -9,6 +9,7 @@ import {
   Merge,
   Pencil,
   RotateCcw,
+  RefreshCw,
   Scissors,
   VolumeOff,
   VolumeX,
@@ -124,6 +125,8 @@ export default function TranscriptPanel() {
   const cutRanges = useEditorStore((s) => s.cutRanges);
   const correctWords = useEditorStore((s) => s.correctWords);
   const importWords = useEditorStore((s) => s.importWords);
+  const audio = useEditorStore((s) => s.audio);
+  const setRetranscribeOpen = useEditorStore((s) => s.setRetranscribeOpen);
   const manualCuts = useEditorStore((s) => s.manualCuts);
   const removeSceneBoundary = useEditorStore((s) => s.removeSceneBoundary);
   const selectedWordIds = useEditorStore((s) => s.selectedWordIds);
@@ -336,6 +339,15 @@ export default function TranscriptPanel() {
           )}
           {(status === "ready" || status === "error" || status === "transcribing") && (
             <>
+              <button
+                onClick={() => setRetranscribeOpen(true)}
+                disabled={status !== "ready" || !audio}
+                title="Re-transcribe this media"
+                className="flex cursor-pointer h-7 items-center gap-1.5 rounded-lg px-2 text-xs text-zinc-500 transition hover:bg-zinc-100 disabled:cursor-not-allowed disabled:opacity-40 dark:text-zinc-400 dark:hover:bg-zinc-800"
+              >
+                <RefreshCw size={14} />
+                <span className="hidden sm:inline">Re-transcribe</span>
+              </button>
               <button
                 onClick={() => importInputRef.current?.click()}
                 title="Replace transcript from SRT, VTT, or JSON"

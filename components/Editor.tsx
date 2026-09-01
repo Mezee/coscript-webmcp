@@ -14,7 +14,7 @@ import TranscriptPanel from "./TranscriptPanel";
 import MediaPreview from "./MediaPreview";
 import Timeline from "./Timeline";
 import ExportDialog from "./ExportDialog";
-import { Download, Redo2, RefreshCw, Undo2 } from "lucide-react";
+import { Download, Redo2, Undo2 } from "lucide-react";
 import LogoLoader from "./LogoLoader";
 import SettingsMenu from "./SettingsMenu";
 import ModelSelector, {
@@ -129,6 +129,8 @@ export default function Editor() {
   const loadVideo = useEditorStore((s) => s.loadVideo);
   const audio = useEditorStore((s) => s.audio);
   const prepareRetranscription = useEditorStore((s) => s.prepareRetranscription);
+  const retranscribeOpen = useEditorStore((s) => s.retranscribeOpen);
+  const setRetranscribeOpen = useEditorStore((s) => s.setRetranscribeOpen);
   const { transcribe } = useTranscriber();
 
   const canUndo = useEditorStore((s) => s.past.length > 0);
@@ -138,7 +140,6 @@ export default function Editor() {
   const setExportOpen = useEditorStore((s) => s.setExportOpen);
 
   const [modeTransitioning, setModeTransitioning] = useState(false);
-  const [retranscribeOpen, setRetranscribeOpen] = useState(false);
   const wasIdle = useRef(status === "idle");
 
   const startRetranscription = useCallback(
@@ -148,7 +149,7 @@ export default function Editor() {
       prepareRetranscription(model, language);
       transcribe(audio, audio.length / VAD_SAMPLE_RATE);
     },
-    [audio, prepareRetranscription, transcribe]
+    [audio, prepareRetranscription, setRetranscribeOpen, transcribe]
   );
 
   // Processing pipeline: load ffmpeg -> extract audio -> (maybe) transcribe.
@@ -282,17 +283,6 @@ export default function Editor() {
             >
               <Redo2 size={16} />
             </button>
-            <div className="mx-1 h-5 w-px bg-zinc-200 dark:bg-zinc-700" />
-            <button
-              onClick={() => setRetranscribeOpen(true)}
-              disabled={status !== "ready" || !audio}
-              title="Re-transcribe media"
-              className="flex h-8 items-center gap-1.5 rounded-lg px-2.5 text-[13px] font-medium text-zinc-600 transition hover:bg-zinc-100 hover:text-zinc-900 disabled:cursor-not-allowed disabled:opacity-40 dark:text-zinc-300 dark:hover:bg-zinc-800 dark:hover:text-zinc-50"
-            >
-              <RefreshCw size={14} />
-              <span className="hidden sm:inline">Re-transcribe</span>
-            </button>
-            <div className="mx-1 h-5 w-px bg-zinc-200 dark:bg-zinc-700" />
             <button
               onClick={() => setExportOpen(true)}
               disabled={status !== "ready" && status !== "exporting"}

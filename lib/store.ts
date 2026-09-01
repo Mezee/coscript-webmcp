@@ -114,6 +114,7 @@ interface EditorState {
   // Export
   exportUrl: string | null;
   exportOpen: boolean;
+  retranscribeOpen: boolean;
 
   // Actions
   /** Load media for editing. Pass `words` to skip transcription and use that transcript. */
@@ -179,6 +180,7 @@ interface EditorState {
   togglePlayback: () => void;
   setExportUrl: (url: string | null) => void;
   setExportOpen: (open: boolean) => void;
+  setRetranscribeOpen: (open: boolean) => void;
   reset: () => void;
 }
 
@@ -281,6 +283,7 @@ export const useEditorStore = create<EditorState>((set, get) => ({
 
   exportUrl: null,
   exportOpen: false,
+  retranscribeOpen: false,
 
   loadVideo: (file, options) => {
     const kind = detectMediaKind(file);
@@ -738,6 +741,7 @@ export const useEditorStore = create<EditorState>((set, get) => ({
   },
   setExportUrl: (exportUrl) => set({ exportUrl }),
   setExportOpen: (exportOpen) => set({ exportOpen }),
+  setRetranscribeOpen: (retranscribeOpen) => set({ retranscribeOpen }),
 
   reset: () => {
     const { mediaUrl, exportUrl } = get();
@@ -772,6 +776,7 @@ export const useEditorStore = create<EditorState>((set, get) => ({
       playing: false,
       exportUrl: null,
       exportOpen: false,
+      retranscribeOpen: false,
     });
   },
 }));
