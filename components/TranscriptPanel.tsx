@@ -196,6 +196,12 @@ export default function TranscriptPanel() {
     const selectedIds = new Set(selection.ids);
     return fillerIds.filter((id) => selectedIds.has(id));
   }, [selection, fillerIds]);
+  const selectionToolbarLeft = selection
+    ? Math.min(
+        Math.max(selection.left, Math.min(200, selection.containerWidth / 2)),
+        Math.max(8, selection.containerWidth - Math.min(200, selection.containerWidth / 2))
+      )
+    : 0;
   const silenceRanges = useMemo(
     () => findSilenceRanges(words, duration, manualCuts),
     [words, duration, manualCuts]
@@ -499,7 +505,7 @@ export default function TranscriptPanel() {
             <div
               data-transcript-toolbar
               className="absolute z-20 flex max-w-[calc(100%-16px)] -translate-x-1/2 items-center gap-0.5 overflow-x-auto rounded-xl border border-zinc-200 bg-white p-1 shadow-lg shadow-zinc-900/10 dark:border-zinc-700 dark:bg-zinc-800 dark:shadow-black/30"
-              style={{ top: selection.top, left: selection.left }}
+              style={{ top: selection.top, left: selectionToolbarLeft }}
               onMouseDown={(e) => e.preventDefault()}
             >
               {selection.anyKept && (

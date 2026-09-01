@@ -17,6 +17,7 @@ export interface TranscriptSelectionInfo {
   anyKept: boolean;
   top: number;
   left: number;
+  containerWidth: number;
 }
 
 /** While dragging: paint marks only. On mouseup / keyboard: sync to React. */
@@ -29,10 +30,11 @@ function sameIds(a: number[], b: number[]): boolean {
 function toolbarPosition(
   rangeRect: DOMRect,
   containerRect: DOMRect
-): Pick<TranscriptSelectionInfo, "top" | "left"> {
+): Pick<TranscriptSelectionInfo, "top" | "left" | "containerWidth"> {
   return {
     top: rangeRect.top - containerRect.top - 44,
     left: Math.max(8, rangeRect.left - containerRect.left + rangeRect.width / 2),
+    containerWidth: containerRect.width,
   };
 }
 
