@@ -35,6 +35,7 @@ import {
 import { useTranscriptSelection } from "@/hooks/useTranscriptSelection";
 import { useCutRanges } from "@/hooks/useCutRanges";
 import { findActiveWordId, groupWordsBySpeaker } from "@/lib/transcript";
+import { TranscriptWebMCPTools } from "./webmcp/WebMCPRegistrars";
 
 const SPEAKER_COLORS = [
   "#16a34a", // green
@@ -300,6 +301,7 @@ export default function TranscriptPanel() {
     // min-h-0 keeps this pane from growing to the transcript's full height —
     // without it the panel wrapper scrolls instead of the list below.
     <section className="relative flex min-h-0 min-w-0 overflow-y-hidden flex-1 flex-col bg-white dark:bg-zinc-900">
+      <TranscriptWebMCPTools />
       {/* Floats above the scroller rather than sticking inside it, so the
           rubber-band overscroll only carries the transcript, not the bar. */}
       <div className="absolute inset-x-0 top-0 z-10 flex h-10 items-center gap-2 border-b border-zinc-100/80 bg-white/75 px-3 backdrop-blur-md sm:px-4 dark:border-zinc-800/80 dark:bg-zinc-900/75">

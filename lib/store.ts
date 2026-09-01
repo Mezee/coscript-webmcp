@@ -44,6 +44,7 @@ import {
   fileFromProject,
   getProject,
 } from "./projects";
+import { recordManualEdit } from "./agent/mutation-context";
 
 interface PendingTranscript {
   name: string;
@@ -236,6 +237,7 @@ function pushEdit(
       ...next,
     });
   }
+  if (!s.gestureActive) recordManualEdit();
   bumpAutosave();
 }
 
@@ -504,22 +506,22 @@ export const useEditorStore = create<EditorState>((set, get) => ({
     const selected = words.slice(from, to + 1);
     if (selected.map((w) => w.text).join(" ") === tokens.join(" ")) return;
 
-    // Distribute the original time span across the new words in proportion
-    // to their character length.
+    // Keep existing ids as stable agent anchors across transcript corrections.
+    // Added tokens receive new ids; removed tokens remain zero-duration anchors.
     const spanStart = selected[0].start;
     const spanEnd = selected[selected.length - 1].end;
     const span = Math.max(0.02, spanEnd - spanStart);
     const totalChars = tokens.reduce((acc, t) => acc + t.length, 0);
     let nextId = words.reduce((m, w) => Math.max(m, w.id), 0) + 1;
     let cursor = spanStart;
-    const replacement: Word[] = tokens.map((t) => {
+    const replacement: Word[] = tokens.map((t, index) => {
       const dur = (span * t.length) / totalChars;
       const word: Word = {
-        id: nextId++,
+        id: selected[index]?.id ?? nextId++,
         text: t,
         start: cursor,
         end: Math.min(spanEnd, cursor + dur),
-        speaker: selected[0].speaker,
+        speaker: selected[index]?.speaker ?? selected[0].speaker,
         // A correction implies the words are wanted, unless the whole
         // selection was already cut.
         deleted: selected.every((w) => w.deleted),
@@ -529,9 +531,16 @@ export const useEditorStore = create<EditorState>((set, get) => ({
     });
     replacement[replacement.length - 1].end = spanEnd;
 
+    const anchors = selected.slice(tokens.length).map((word) => ({
+      ...word,
+      text: "",
+      start: spanEnd,
+      end: spanEnd,
+      deleted: false,
+    }));
+
     pushEdit(get, set, {
-      words: [...words.slice(0, from), ...replacement, ...words.slice(to + 1)],
-      // The corrected span is new words with new ids; nothing to stay selected.
+      words: [...words.slice(0, from), ...replacement, ...anchors, ...words.slice(to + 1)],
       selectedWordIds: [],
     });
   },
@@ -612,6 +621,7 @@ export const useEditorStore = create<EditorState>((set, get) => ({
   beginGesture: () => {
     const s = get();
     if (s.gestureActive) return;
+    recordManualEdit();
     set({
       gestureActive: true,
       past: [...s.past, snapshotOf(s)],

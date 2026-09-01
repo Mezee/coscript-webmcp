@@ -24,6 +24,7 @@ import {
   type TranscriptDocFormat,
 } from "@/lib/serializeTranscript";
 import { useCutRanges } from "@/hooks/useCutRanges";
+import { useAgentStore } from "@/lib/agent/store";
 
 type ExportTab = "video" | "audio" | "transcript" | "subtitles";
 
@@ -79,6 +80,10 @@ export default function ExportDialog() {
   const [subtitleFormat, setSubtitleFormat] = useState<SubtitleFormat>("srt");
   const [progress, setProgress] = useState(0);
   const [error, setError] = useState<string | null>(null);
+  const agentExportRequest = useAgentStore((state) => state.exportRequest);
+  const setAgentExportRequest = useAgentStore((state) => state.setExportRequest);
+  const effectiveVideoFormat = agentExportRequest?.format ?? videoFormat;
+  const effectiveResolution = agentExportRequest?.resolution ?? resolution;
 
   const cuts = useCutRanges();
   const editedDuration = useMemo(
@@ -89,18 +94,19 @@ export default function ExportDialog() {
   const hasWords = words.length > 0;
 
   // Fall back when the remembered tab isn't valid for this project.
+  const requestedTab: ExportTab = agentExportRequest ? "video" : tab;
   const activeTab: ExportTab =
-    tab === "video" && isAudioProject
+    requestedTab === "video" && isAudioProject
       ? "audio"
-      : tab === "audio" && !hasAudioTrack
+      : requestedTab === "audio" && !hasAudioTrack
         ? isAudioProject
           ? "transcript"
           : "video"
-        : (tab === "transcript" || tab === "subtitles") && !hasWords
+        : (requestedTab === "transcript" || requestedTab === "subtitles") && !hasWords
           ? isAudioProject
             ? "audio"
             : "video"
-          : tab;
+          : requestedTab;
 
   const baseName = videoFile
     ? videoFile.name.replace(/\.[^.]+$/, "")
@@ -109,7 +115,7 @@ export default function ExportDialog() {
   const mediaExt =
     activeTab === "audio"
       ? audioFormat
-      : videoFormat === "webm"
+      : effectiveVideoFormat === "webm"
         ? "webm"
         : "mp4";
   const mediaFileName = `${baseName}.edited.${mediaExt}`;
@@ -129,8 +135,9 @@ export default function ExportDialog() {
         setError(null);
         return next;
       });
+      setAgentExportRequest(null);
     },
-    [clearMediaExport]
+    [clearMediaExport, setAgentExportRequest]
   );
 
   const setVideoFormatOption = useCallback(
@@ -140,8 +147,9 @@ export default function ExportDialog() {
         clearMediaExport();
         return value;
       });
+      setAgentExportRequest(null);
     },
-    [clearMediaExport]
+    [clearMediaExport, setAgentExportRequest]
   );
 
   const setResolutionOption = useCallback(
@@ -151,8 +159,9 @@ export default function ExportDialog() {
         clearMediaExport();
         return value;
       });
+      setAgentExportRequest(null);
     },
-    [clearMediaExport]
+    [clearMediaExport, setAgentExportRequest]
   );
 
   const setAudioFormatOption = useCallback(
@@ -183,8 +192,8 @@ export default function ExportDialog() {
             })
           : await exportVideo(videoFile, keeps, editedDuration, setProgress, {
               withAudio: hasAudioTrack,
-              format: videoFormat,
-              resolution,
+              format: effectiveVideoFormat,
+              resolution: effectiveResolution,
             });
       const prev = useEditorStore.getState().exportUrl;
       if (prev) URL.revokeObjectURL(prev);
@@ -203,8 +212,8 @@ export default function ExportDialog() {
     duration,
     editedDuration,
     audioFormat,
-    videoFormat,
-    resolution,
+    effectiveVideoFormat,
+    effectiveResolution,
     setStatus,
     setExportUrl,
   ]);
@@ -340,14 +349,14 @@ export default function ExportDialog() {
           <div className="mb-5 space-y-4">
             <OptionGroup
               label="Format"
-              value={videoFormat}
+              value={effectiveVideoFormat}
               options={VIDEO_FORMATS}
               disabled={exporting}
               onChange={setVideoFormatOption}
             />
             <OptionGroup
               label="Resolution"
-              value={resolution}
+              value={effectiveResolution}
               options={VIDEO_RESOLUTIONS}
               disabled={exporting}
               onChange={setResolutionOption}
@@ -449,7 +458,7 @@ export default function ExportDialog() {
               Export{" "}
               {activeTab === "audio"
                 ? audioFormat.toUpperCase()
-                : videoFormat.toUpperCase()}
+                : effectiveVideoFormat.toUpperCase()}
             </button>
           ))}
 

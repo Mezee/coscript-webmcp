@@ -23,6 +23,8 @@ import ModelSelector, {
   ModelOptionSeparator,
 } from "./ModelSelector";
 import ImportTranscriptOption from "./ImportTranscriptOption";
+import AgentPanel from "./AgentPanel";
+import { EditorActionWebMCPTools, ProcessingWebMCPTools } from "./webmcp/WebMCPRegistrars";
 
 /** How long the desktop mode-change overlay stays up. Matches the macOS
  *  `setBounds(..., animate)` duration plus a small buffer so the layout
@@ -226,6 +228,8 @@ export default function Editor() {
 
   return (
     <div className="relative flex h-dvh flex-col overflow-hidden bg-zinc-50 text-zinc-900 dark:bg-zinc-950 dark:text-zinc-100">
+      <ProcessingWebMCPTools />
+      <EditorActionWebMCPTools />
       {status === "idle" ? (
         <>
           {isElectron && <TopBar>
@@ -273,7 +277,10 @@ export default function Editor() {
             <div className="mx-1 h-5 w-px bg-zinc-200 dark:bg-zinc-700" />
             <SettingsMenu />
           </TopBar>
-          <EditorWorkspace />
+          <div className="flex min-h-0 min-w-0 flex-1">
+            <EditorWorkspace />
+            <AgentPanel />
+          </div>
           <Timeline />
         </>
       )}

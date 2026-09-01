@@ -34,6 +34,7 @@ import {
 import { isElectron } from "@/lib/platform";
 import { useEditorStore } from "@/lib/store";
 import type { Word } from "@/lib/types";
+import { UploadWebMCPTools } from "./webmcp/WebMCPRegistrars";
 
 // The three media cards that stand in for the upload icon. Each carries its
 // resting transform plus the fanned-out one, applied either on hover (via the
@@ -252,6 +253,7 @@ export default function UploadScreen({
 
   return (
     <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain bg-gradient-to-b from-zinc-50 to-neutral-50/50 dark:from-zinc-950 dark:to-zinc-900/50">
+      <UploadWebMCPTools hasRecentProjects={projects.length > 0} />
       {/* min-h-full + items-center centers when content fits; the outer
           overflow-y-auto still lets short viewports (mobile) scroll the top. */}
       <div className="flex min-h-full items-center justify-center p-6">
