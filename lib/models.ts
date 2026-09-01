@@ -99,9 +99,9 @@ export function isModelChoice(value: unknown): value is ModelChoice {
 const MODEL_STORAGE_KEY = "rescript.model";
 const VERBATIM_STORAGE_KEY = "rescript.verbatim";
 
-/** Read the last-selected transcription model from localStorage (defaults to base). */
+/** Read the last-selected transcription model from localStorage (defaults to Small). */
 export function loadModelPreference(): TranscriptionModel {
-  if (typeof window === "undefined") return "base";
+  if (typeof window === "undefined") return "small";
   try {
     const raw = window.localStorage.getItem(MODEL_STORAGE_KEY);
     // Ignore a stale "import" preference — that choice is session-only until a
@@ -110,7 +110,7 @@ export function loadModelPreference(): TranscriptionModel {
   } catch {
     // private mode / disabled storage
   }
-  return "base";
+  return "small";
 }
 
 /** Persist the selected transcription model for the next visit. */
@@ -125,11 +125,12 @@ export function saveModelPreference(model: TranscriptionModel) {
 
 /** Whether new transcripts should favor disfluencies over a polished reading. */
 export function loadVerbatimPreference(): boolean {
-  if (typeof window === "undefined") return false;
+  if (typeof window === "undefined") return true;
   try {
-    return window.localStorage.getItem(VERBATIM_STORAGE_KEY) === "true";
+    const stored = window.localStorage.getItem(VERBATIM_STORAGE_KEY);
+    return stored === null ? true : stored === "true";
   } catch {
-    return false;
+    return true;
   }
 }
 
