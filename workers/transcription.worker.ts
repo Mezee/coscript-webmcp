@@ -727,9 +727,16 @@ self.onmessage = async (event: MessageEvent<WorkerRequest>) => {
       reportProgress(0, 0);
     }
 
+    // Each Whisper VAD slice numbers words from zero. Normal cleanup happens
+    // to re-index them, but verbatim mode must keep the words themselves while
+    // still producing globally unique editor IDs.
+    const indexedRawWords = rawWords.map((word, id) =>
+      word.id === id ? word : { ...word, id }
+    );
+
     // Post-process: collapse leftover n-gram loops and drop known hallucination
     // phrases ("I'm sorry", "thanks for watching", …) that slip past decoding.
-    const cleaned = verbatim ? rawWords : cleanTranscript(rawWords);
+    const cleaned = verbatim ? indexedRawWords : cleanTranscript(indexedRawWords);
 
     // Whisper's DTW word timestamps run consistently late (~0.2 s on the test
     // clips). Realign them against the VAD flags before diarization, so speakers
