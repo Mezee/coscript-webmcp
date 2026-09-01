@@ -90,4 +90,6 @@ export interface WorkerRequest {
   model: import("./models").TranscriptionModel;
   /** Language hint for the transcription model. */
   language: import("./languages").TranscriptLanguage;
+  /** Preserve repetitions and disfluencies where the model detects them. */
+  verbatim: boolean;
 }

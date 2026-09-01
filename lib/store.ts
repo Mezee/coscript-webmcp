@@ -28,7 +28,9 @@ import {
   isModelChoice,
   isTranscriptionModel,
   loadModelPreference,
+  loadVerbatimPreference,
   saveModelPreference,
+  saveVerbatimPreference,
 } from "./models";
 import type { ModelChoice, TranscriptionModel } from "./models";
 import {
@@ -64,6 +66,8 @@ interface EditorState {
   model: ModelChoice;
   /** Language hint sent to Whisper when transcribing. */
   transcriptLanguage: TranscriptLanguage;
+  /** Favor disfluencies and repetitions over a cleaned reading. */
+  verbatim: boolean;
   /**
    * Caption file parsed on the upload screen when source is "import".
    * Cleared when switching back to a speech model or after media loads.
@@ -127,9 +131,11 @@ interface EditorState {
   /** Clear transcript-derived edits before running a selected speech model again. */
   prepareRetranscription: (
     model: TranscriptionModel,
-    transcriptLanguage: TranscriptLanguage
+    transcriptLanguage: TranscriptLanguage,
+    verbatim: boolean
   ) => void;
   setTranscriptLanguage: (language: TranscriptLanguage) => void;
+  setVerbatim: (verbatim: boolean) => void;
   setPendingTranscript: (t: PendingTranscript | null) => void;
   setDuration: (d: number) => void;
   setAudio: (a: Float32Array | null) => void;
@@ -256,6 +262,7 @@ export const useEditorStore = create<EditorState>((set, get) => ({
   audio: null,
   model: "base",
   transcriptLanguage: DEFAULT_TRANSCRIPT_LANGUAGE,
+  verbatim: false,
   pendingTranscript: null,
   projectId: null,
   skipTranscription: false,
@@ -382,14 +389,16 @@ export const useEditorStore = create<EditorState>((set, get) => ({
       set({ model });
     }
   },
-  prepareRetranscription: (model, transcriptLanguage) => {
+  prepareRetranscription: (model, transcriptLanguage, verbatim) => {
     const previousExport = get().exportUrl;
     if (previousExport) URL.revokeObjectURL(previousExport);
     saveModelPreference(model);
     saveTranscriptLanguagePreference(transcriptLanguage);
+    saveVerbatimPreference(verbatim);
     set({
       model,
       transcriptLanguage,
+      verbatim,
       pendingTranscript: null,
       skipTranscription: false,
       words: [],
@@ -411,6 +420,10 @@ export const useEditorStore = create<EditorState>((set, get) => ({
   setTranscriptLanguage: (transcriptLanguage) => {
     saveTranscriptLanguagePreference(transcriptLanguage);
     set({ transcriptLanguage });
+  },
+  setVerbatim: (verbatim) => {
+    saveVerbatimPreference(verbatim);
+    set({ verbatim });
   },
   setPendingTranscript: (pendingTranscript) => set({ pendingTranscript }),
   setDuration: (duration) => {
@@ -755,6 +768,7 @@ export const useEditorStore = create<EditorState>((set, get) => ({
       audio: null,
       model: loadModelPreference(),
       transcriptLanguage: loadTranscriptLanguagePreference(),
+      verbatim: loadVerbatimPreference(),
       pendingTranscript: null,
       projectId: null,
       skipTranscription: false,
@@ -794,5 +808,13 @@ export function hydrateTranscriptLanguagePreference() {
   const stored = loadTranscriptLanguagePreference();
   if (stored !== useEditorStore.getState().transcriptLanguage) {
     useEditorStore.setState({ transcriptLanguage: stored });
+  }
+}
+
+/** Apply the stored verbatim preference after mount. */
+export function hydrateVerbatimPreference() {
+  const stored = loadVerbatimPreference();
+  if (stored !== useEditorStore.getState().verbatim) {
+    useEditorStore.setState({ verbatim: stored });
   }
 }

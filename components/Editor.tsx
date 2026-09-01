@@ -143,10 +143,10 @@ export default function Editor() {
   const wasIdle = useRef(status === "idle");
 
   const startRetranscription = useCallback(
-    (model: TranscriptionModel, language: TranscriptLanguage) => {
+    (model: TranscriptionModel, language: TranscriptLanguage, verbatim: boolean) => {
       if (!audio) return;
       setRetranscribeOpen(false);
-      prepareRetranscription(model, language);
+      prepareRetranscription(model, language, verbatim);
       transcribe(audio, audio.length / VAD_SAMPLE_RATE);
     },
     [audio, prepareRetranscription, setRetranscribeOpen, transcribe]

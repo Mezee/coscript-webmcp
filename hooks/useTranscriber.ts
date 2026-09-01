@@ -32,6 +32,7 @@ export function useTranscriber() {
     }
     const transcriptionModel = store.model;
     const transcriptLanguage = store.transcriptLanguage;
+    const verbatim = store.verbatim;
     store.setStatus("transcribing");
     store.setProgress({ message: "Loading speech model…", value: null });
 
@@ -73,7 +74,7 @@ export function useTranscriber() {
     // Transfer a copy so the original stays available for the waveform.
     const copy = audio.slice();
     workerRef.current.postMessage(
-      { audio: copy, duration, model: transcriptionModel, language: transcriptLanguage },
+      { audio: copy, duration, model: transcriptionModel, language: transcriptLanguage, verbatim },
       [copy.buffer]
     );
   }, []);

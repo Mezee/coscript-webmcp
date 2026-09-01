@@ -25,14 +25,20 @@ export default function RetranscribeDialog({
   onConfirm,
 }: {
   onClose: () => void;
-  onConfirm: (model: TranscriptionModel, language: TranscriptLanguage) => void;
+  onConfirm: (
+    model: TranscriptionModel,
+    language: TranscriptLanguage,
+    verbatim: boolean
+  ) => void;
 }) {
   const currentModel = useEditorStore((s) => s.model);
   const currentLanguage = useEditorStore((s) => s.transcriptLanguage);
+  const currentVerbatim = useEditorStore((s) => s.verbatim);
   const [model, setModel] = useState<TranscriptionModel>(
     currentModel === "import" ? "base" : currentModel
   );
   const [language, setLanguage] = useState<TranscriptLanguage>(currentLanguage);
+  const [verbatim, setVerbatim] = useState(currentVerbatim);
   const isParakeet = isParakeetModel(model);
   const selectedLanguage = isParakeet ? "en" : language;
 
@@ -100,6 +106,21 @@ export default function RetranscribeDialog({
               <p className="mt-1.5 text-xs text-zinc-500 dark:text-zinc-400">Parakeet TDT v2 supports English only.</p>
             )}
           </label>
+
+          <label className="flex cursor-pointer items-start gap-3 rounded-lg border border-zinc-200 px-3 py-2.5 dark:border-zinc-700">
+            <input
+              type="checkbox"
+              checked={verbatim}
+              onChange={(event) => setVerbatim(event.target.checked)}
+              className="mt-0.5 h-4 w-4 accent-zinc-900 dark:accent-zinc-100"
+            />
+            <span>
+              <span className="block text-sm font-medium text-zinc-800 dark:text-zinc-100">Verbatim transcript</span>
+              <span className="mt-0.5 block text-xs leading-4 text-zinc-500 dark:text-zinc-400">
+                Preserve stutters, filler words, and repetitions where the model detects them.
+              </span>
+            </span>
+          </label>
         </div>
 
         <p className="mt-5 rounded-lg bg-amber-50 px-3 py-2.5 text-xs leading-5 text-amber-900 dark:bg-amber-950/40 dark:text-amber-200">
@@ -116,7 +137,7 @@ export default function RetranscribeDialog({
           </button>
           <button
             type="button"
-            onClick={() => onConfirm(model, selectedLanguage)}
+            onClick={() => onConfirm(model, selectedLanguage, verbatim)}
             className="flex h-9 items-center gap-1.5 rounded-lg bg-zinc-900 px-3.5 text-sm font-medium text-white transition hover:bg-zinc-700 dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-zinc-200"
           >
             <RefreshCw size={14} />

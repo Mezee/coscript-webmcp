@@ -33,6 +33,7 @@ import {
 import {
   hydrateModelPreference,
   hydrateTranscriptLanguagePreference,
+  hydrateVerbatimPreference,
   useEditorStore,
 } from "@/lib/store";
 import Popover, { PopoverContent, PopoverTrigger } from "./Popover";
@@ -134,6 +135,7 @@ export default function ModelSelector({
   useEffect(() => {
     hydrateModelPreference();
     hydrateTranscriptLanguagePreference();
+    hydrateVerbatimPreference();
   }, []);
 
   const closeMenu = useCallback(() => {

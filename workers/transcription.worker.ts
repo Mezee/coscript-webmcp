@@ -55,6 +55,7 @@ const SPEECH_PAD_S = 0.4;
  * (timestamps are remapped so the pad does not shift the timeline).
  */
 const WHISPER_LEAD_PAD_S = 0.5;
+const VERBATIM_PROMPT = "um uh I I I, you know, like";
 
 type AsrChunk = { text: string; timestamp: [number, number | null] };
 type ParakeetInstance = import("parakeet.js").ParakeetModel;
@@ -524,7 +525,7 @@ function assignSpeakers(words: Word[], segments: DiarizationSegment[]) {
 }
 
 self.onmessage = async (event: MessageEvent<WorkerRequest>) => {
-  const { audio, duration, model, language } = event.data;
+  const { audio, duration, model, language, verbatim } = event.data;
   try {
     const choice = model ?? "base";
     const transcriptLanguage = language ?? "en";
@@ -572,10 +573,11 @@ self.onmessage = async (event: MessageEvent<WorkerRequest>) => {
       await detectSpeechSegments(audio, vad);
 
     const { verbatimPrompt } = MODELS[whisperChoice];
-    const promptedIds = verbatimPrompt
-      ? buildPromptedDecoderIds(transcriber, verbatimPrompt, transcriptLanguage)
+    const activePrompt = verbatim ? VERBATIM_PROMPT : verbatimPrompt;
+    const promptedIds = activePrompt
+      ? buildPromptedDecoderIds(transcriber, activePrompt, transcriptLanguage)
       : null;
-    if (verbatimPrompt && !promptedIds) {
+    if (activePrompt && !promptedIds) {
       console.warn("Could not build verbatim prompt tokens; using default decoding.");
     }
 
@@ -644,8 +646,7 @@ self.onmessage = async (event: MessageEvent<WorkerRequest>) => {
       // loops like "little bit of a little bit of a…" near chunk boundaries
       // or silence. Keep penalty mild — 1.15 truncates multi-speaker clips
       // mid-utterance (second speaker dropped on continuous speech).
-      no_repeat_ngram_size: 4,
-      repetition_penalty: 1.05,
+      ...(verbatim ? {} : { no_repeat_ngram_size: 4, repetition_penalty: 1.05 }),
       ...(promptedIds
         ? { decoder_input_ids: promptedIds }
         : { language: transcriptLanguage }),
@@ -728,7 +729,7 @@ self.onmessage = async (event: MessageEvent<WorkerRequest>) => {
 
     // Post-process: collapse leftover n-gram loops and drop known hallucination
     // phrases ("I'm sorry", "thanks for watching", …) that slip past decoding.
-    const cleaned = cleanTranscript(rawWords);
+    const cleaned = verbatim ? rawWords : cleanTranscript(rawWords);
 
     // Whisper's DTW word timestamps run consistently late (~0.2 s on the test
     // clips). Realign them against the VAD flags before diarization, so speakers
