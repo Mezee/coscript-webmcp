@@ -48,7 +48,7 @@ export default function AgentPanel() {
       <PlanWebMCPTools />
 
       <header className="flex items-center justify-between border-b border-zinc-200 px-4 py-3 dark:border-zinc-800">
-        <h2 className="text-sm font-medium text-zinc-900 text-balance dark:text-zinc-100">Assistant</h2>
+        <h2 className="text-sm font-medium text-zinc-900 text-balance dark:text-zinc-100">Assistant Workspace</h2>
         <span className={`flex items-center gap-1.5 text-[11px] ${native ? "text-emerald-700 dark:text-emerald-400" : "text-zinc-500 dark:text-zinc-400"}`}>
           <i className={`size-1.5 rounded-full ${native ? "bg-emerald-500" : "bg-zinc-400"}`} />
           {native ? "Connected" : "Available"}
@@ -75,7 +75,7 @@ export default function AgentPanel() {
         )}
 
         <section className="px-4 py-3">
-          <h3 className="mb-1 text-xs font-medium text-zinc-900 dark:text-zinc-100">Activity</h3>
+          <h3 className="mb-1 text-xs font-medium text-zinc-900 dark:text-zinc-100">Agent History</h3>
           {events.length === 0 ? (
             <p className="text-pretty text-[11px] leading-4 text-zinc-500 dark:text-zinc-400">Recent assistant actions will appear here.</p>
           ) : events.slice(0, 8).map((event) => (
