@@ -101,15 +101,8 @@ const VERBATIM_STORAGE_KEY = "rescript.verbatim";
 
 /** Read the last-selected transcription model from localStorage (defaults to Small). */
 export function loadModelPreference(): TranscriptionModel {
-  if (typeof window === "undefined") return "small";
-  try {
-    const raw = window.localStorage.getItem(MODEL_STORAGE_KEY);
-    // Ignore a stale "import" preference — that choice is session-only until a
-    // transcript file is picked again.
-    if (isTranscriptionModel(raw)) return raw;
-  } catch {
-    // private mode / disabled storage
-  }
+  // The editor intentionally ships one warmed speech model for a predictable
+  // first-run experience. Keep the legacy key only so old sessions stay safe.
   return "small";
 }
 

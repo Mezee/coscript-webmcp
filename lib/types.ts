@@ -78,11 +78,15 @@ export interface ProgressInfo {
 /** Messages posted from the transcription worker to the main thread. */
 export type WorkerResponse =
   | { type: "progress"; message: string; value: number | null }
+  | { type: "model-ready" }
   | { type: "partial"; text: string }
   | { type: "complete"; words: Word[] }
   | { type: "error"; message: string };
 
-export interface WorkerRequest {
+export type WorkerRequest =
+  | { type: "preload"; model: import("./models").WhisperModel }
+  | {
+  type: "transcribe";
   audio: Float32Array;
   /** Total media duration in seconds (used for progress estimation). */
   duration: number;
@@ -92,4 +96,4 @@ export interface WorkerRequest {
   language: import("./languages").TranscriptLanguage;
   /** Preserve repetitions and disfluencies where the model detects them. */
   verbatim: boolean;
-}
+  };

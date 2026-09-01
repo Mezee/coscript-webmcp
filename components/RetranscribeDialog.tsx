@@ -2,23 +2,13 @@
 
 import { useState } from "react";
 import { RefreshCw, X } from "lucide-react";
-import {
-  getTranscriptionModelInfo,
-  isParakeetModel,
-  type TranscriptionModel,
-} from "@/lib/models";
+import type { TranscriptionModel } from "@/lib/models";
 import {
   TRANSCRIPT_LANGUAGE_ORDER,
   TRANSCRIPT_LANGUAGES,
   type TranscriptLanguage,
 } from "@/lib/languages";
 import { useEditorStore } from "@/lib/store";
-
-const MODEL_OPTIONS: TranscriptionModel[] = [
-  "base",
-  "small",
-  "parakeet-tdt-0.6b-v2",
-];
 
 export default function RetranscribeDialog({
   onClose,
@@ -31,16 +21,12 @@ export default function RetranscribeDialog({
     verbatim: boolean
   ) => void;
 }) {
-  const currentModel = useEditorStore((s) => s.model);
   const currentLanguage = useEditorStore((s) => s.transcriptLanguage);
   const currentVerbatim = useEditorStore((s) => s.verbatim);
-  const [model, setModel] = useState<TranscriptionModel>(
-    currentModel === "import" ? "base" : currentModel
-  );
+  const model: TranscriptionModel = "small";
   const [language, setLanguage] = useState<TranscriptLanguage>(currentLanguage);
   const [verbatim, setVerbatim] = useState(currentVerbatim);
-  const isParakeet = isParakeetModel(model);
-  const selectedLanguage = isParakeet ? "en" : language;
+  const selectedLanguage = language;
 
   return (
     <div
@@ -77,24 +63,9 @@ export default function RetranscribeDialog({
 
         <div className="mt-5 space-y-4">
           <label className="block">
-            <span className="mb-1.5 block text-xs font-medium text-zinc-700 dark:text-zinc-300">Speech model</span>
-            <select
-              value={model}
-              onChange={(event) => setModel(event.target.value as TranscriptionModel)}
-              className="h-10 w-full rounded-lg border border-zinc-200 bg-white px-3 text-sm text-zinc-900 outline-none transition focus:border-zinc-400 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-100 dark:focus:border-zinc-500"
-            >
-              {MODEL_OPTIONS.map((option) => {
-                const info = getTranscriptionModelInfo(option);
-                return <option key={option} value={option}>{info.label} — {info.size}</option>;
-              })}
-            </select>
-          </label>
-
-          <label className="block">
             <span className="mb-1.5 block text-xs font-medium text-zinc-700 dark:text-zinc-300">Language</span>
             <select
               value={selectedLanguage}
-              disabled={isParakeet}
               onChange={(event) => setLanguage(event.target.value as TranscriptLanguage)}
               className="h-10 w-full rounded-lg border border-zinc-200 bg-white px-3 text-sm text-zinc-900 outline-none transition disabled:cursor-not-allowed disabled:opacity-60 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-100"
             >
@@ -102,9 +73,6 @@ export default function RetranscribeDialog({
                 <option key={option} value={option}>{TRANSCRIPT_LANGUAGES[option].label}</option>
               ))}
             </select>
-            {isParakeet && (
-              <p className="mt-1.5 text-xs text-zinc-500 dark:text-zinc-400">Parakeet TDT v2 supports English only.</p>
-            )}
           </label>
 
           <label className="flex cursor-pointer items-start gap-3 rounded-lg border border-zinc-200 px-3 py-2.5 dark:border-zinc-700">

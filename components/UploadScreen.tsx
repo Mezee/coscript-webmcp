@@ -7,7 +7,6 @@ import {
   Clapperboard,
   Film,
   Loader2,
-  Lock,
   Music,
   Scissors,
   ShieldAlert,
@@ -155,8 +154,12 @@ function RecentProjects({
 
 export default function UploadScreen({
   onFile,
+  speechReady,
+  speechMessage,
 }: {
   onFile: (file: File, options?: { words?: Word[] }) => void;
+  speechReady: boolean;
+  speechMessage: string;
 }) {
   const inputRef = useRef<HTMLInputElement>(null);
   const [dragging, setDragging] = useState(false);
@@ -166,7 +169,7 @@ export default function UploadScreen({
   // after the COI service worker reloads the page. Accepting a file before then
   // would fail immediately and lose the file to that reload.
   const isolation = useCrossOriginIsolated();
-  const ready = isolation === "ready";
+  const ready = isolation === "ready" && speechReady;
   const model = useEditorStore((s) => s.model);
   const pendingTranscript = useEditorStore((s) => s.pendingTranscript);
   const openProject = useEditorStore((s) => s.openProject);
@@ -277,9 +280,7 @@ export default function UploadScreen({
                 <SettingsMenu />
                 <div className="h-5 w-px bg-zinc-200 dark:bg-zinc-700" />
                 <ModelSelector groupLabel="Transcript source">
-                  <ModelOption id="base" />
                   <ModelOption id="small" />
-                  <ModelOption id="parakeet-tdt-0.6b-v2" />
                   <ModelOptionSeparator />
                   <LanguageSection />
                   <ModelOptionSeparator />
@@ -353,9 +354,9 @@ export default function UploadScreen({
               </>
             ) : (
               <>
-                <p className="text-[15px] font-medium text-zinc-800 dark:text-zinc-100">Getting things ready</p>
+                <p className="text-[15px] font-medium text-zinc-800 dark:text-zinc-100">Preparing transcription</p>
                 <p className="mt-1 text-[13px] text-zinc-400 dark:text-zinc-500">
-                  Setting up the media engine, this only happens once.
+                  {speechMessage || "Loading Whisper Small. This only happens once."}
                 </p>
               </>
             )}

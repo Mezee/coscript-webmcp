@@ -509,9 +509,19 @@ function assignSpeakers(words: Word[], segments: DiarizationSegment[]) {
 }
 
 self.onmessage = async (event: MessageEvent<WorkerRequest>) => {
+  if (event.data.type === "preload") {
+    try {
+      await getAsr(event.data.model);
+      post({ type: "model-ready" });
+    } catch (error) {
+      post({ type: "error", message: error instanceof Error ? error.message : "Could not load the speech model." });
+    }
+    return;
+  }
+
   const { audio, duration, model, language, verbatim } = event.data;
   try {
-    const choice = model ?? "base";
+    const choice = model ?? "small";
     const transcriptLanguage = language ?? "en";
 
     if (isParakeetModel(choice)) {

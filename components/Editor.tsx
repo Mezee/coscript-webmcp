@@ -131,7 +131,7 @@ export default function Editor() {
   const prepareRetranscription = useEditorStore((s) => s.prepareRetranscription);
   const retranscribeOpen = useEditorStore((s) => s.retranscribeOpen);
   const setRetranscribeOpen = useEditorStore((s) => s.setRetranscribeOpen);
-  const { transcribe } = useTranscriber();
+  const { transcribe, modelState } = useTranscriber();
 
   const canUndo = useEditorStore((s) => s.past.length > 0);
   const canRedo = useEditorStore((s) => s.future.length > 0);
@@ -251,9 +251,7 @@ export default function Editor() {
         <>
           {isElectron && <TopBar>
             <ModelSelector groupLabel="Transcript source">
-              <ModelOption id="base" />
               <ModelOption id="small" />
-              <ModelOption id="parakeet-tdt-0.6b-v2" />
               <ModelOptionSeparator />
               <LanguageSection />
               <ModelOptionSeparator />
@@ -262,7 +260,11 @@ export default function Editor() {
             <div className="mx-1 h-5 w-px bg-zinc-200 dark:bg-zinc-700" />
             <SettingsMenu />
           </TopBar>}
-          <UploadScreen onFile={loadVideo} />
+          <UploadScreen
+            onFile={loadVideo}
+            speechReady={modelState.ready}
+            speechMessage={modelState.error ?? modelState.message}
+          />
         </>
       ) : (
         <>

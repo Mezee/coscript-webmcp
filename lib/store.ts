@@ -301,14 +301,13 @@ export const useEditorStore = create<EditorState>((set, get) => ({
     if (imported && imported.length === 0) return;
     const prev = get().mediaUrl;
     if (prev) URL.revokeObjectURL(prev);
-    const current = get().model;
     set({
       videoFile: file,
       mediaUrl: URL.createObjectURL(file),
       mediaKind: kind,
       projectId: null,
       skipTranscription: Boolean(imported),
-      model: imported ? "import" : isTranscriptionModel(current) ? current : "base",
+      model: imported ? "import" : "small",
       pendingTranscript: null,
       status: "preparing",
       progress: {
