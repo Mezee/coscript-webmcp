@@ -336,11 +336,11 @@ export default function TranscriptPanel() {
       <TranscriptWebMCPTools />
       {/* Floats above the scroller rather than sticking inside it, so the
           rubber-band overscroll only carries the transcript, not the bar. */}
-      <div className="absolute inset-x-0 top-0 z-10 flex h-10 items-center gap-2 border-b border-zinc-100/80 bg-white/75 px-3 backdrop-blur-md sm:px-4 dark:border-zinc-800/80 dark:bg-zinc-900/75">
-        <span className="text-xs font-semibold uppercase tracking-wider text-zinc-400 dark:text-zinc-500">
+      <div className="absolute inset-x-0 top-0 z-10 flex h-10 items-center gap-2 overflow-x-auto border-b border-zinc-100/80 bg-white/75 px-3 backdrop-blur-md sm:px-4 dark:border-zinc-800/80 dark:bg-zinc-900/75">
+        <span className="shrink-0 text-xs font-semibold uppercase tracking-wider text-zinc-400 dark:text-zinc-500">
           Transcript
         </span>
-        <div className="ml-auto flex items-center gap-2">
+        <div className="ml-auto flex shrink-0 items-center gap-2">
           {deletedCount > 0 && (
             <span className="rounded-md bg-red-50 px-2 py-0.5 text-[9px] font-medium text-red-600 line-clamp-1 line-through dark:bg-red-950/40 dark:text-red-400">
               {deletedCount} word{deletedCount === 1 ? "" : "s"}
@@ -350,19 +350,19 @@ export default function TranscriptPanel() {
             <button
               onClick={removeFillers}
               title='Cut filler words ("um", "uh", …) from the video'
-              className="flex cursor-pointer h-7 items-center gap-1.5 rounded-lg px-2 text-xs text-zinc-500 transition hover:bg-zinc-100 line-clamp-1 dark:text-zinc-400 dark:hover:bg-zinc-800"
+              className="flex h-7 cursor-pointer items-center gap-1.5 whitespace-nowrap rounded-lg px-2 text-xs text-zinc-500 transition hover:bg-zinc-100 dark:text-zinc-400 dark:hover:bg-zinc-800"
             >
-              <WandSparkles size={14} />
-              <span className="hidden sm:inline">Remove filler words ({fillerIds.length})</span>
+              <WandSparkles className="size-3.5 shrink-0" />
+              <span className="hidden sm:inline">Fillers ({fillerIds.length})</span>
             </button>
           )}
           {status === "ready" && silenceRanges.length > 0 && (
             <button
               onClick={removeSilences}
               title="Cut pauses and silences (≥0.3s) from the video"
-              className="flex cursor-pointer h-7 items-center gap-1.5 rounded-lg px-2 text-xs text-zinc-500 transition hover:bg-zinc-100 line-clamp-1 dark:text-zinc-400 dark:hover:bg-zinc-800"
+              className="flex h-7 cursor-pointer items-center gap-1.5 whitespace-nowrap rounded-lg px-2 text-xs text-zinc-500 transition hover:bg-zinc-100 dark:text-zinc-400 dark:hover:bg-zinc-800"
             >
-              <VolumeX size={14} />
+              <VolumeX className="size-3.5 shrink-0" />
               <span className="hidden sm:inline">Remove silences ({silenceRanges.length})</span>
             </button>
           )}
@@ -372,17 +372,17 @@ export default function TranscriptPanel() {
                 onClick={() => setRetranscribeOpen(true)}
                 disabled={status !== "ready" || !audio}
                 title="Re-transcribe this media"
-                className="flex cursor-pointer h-7 items-center gap-1.5 rounded-lg px-2 text-xs text-zinc-500 transition hover:bg-zinc-100 disabled:cursor-not-allowed disabled:opacity-40 dark:text-zinc-400 dark:hover:bg-zinc-800"
+                className="flex h-7 cursor-pointer items-center gap-1.5 whitespace-nowrap rounded-lg px-2 text-xs text-zinc-500 transition hover:bg-zinc-100 disabled:cursor-not-allowed disabled:opacity-40 dark:text-zinc-400 dark:hover:bg-zinc-800"
               >
-                <RefreshCw size={14} />
+                <RefreshCw className="size-3.5 shrink-0" />
                 <span className="hidden sm:inline">Re-transcribe</span>
               </button>
               <button
                 onClick={() => importInputRef.current?.click()}
                 title="Replace transcript from SRT, VTT, or JSON"
-                className="flex cursor-pointer h-7 items-center gap-1.5 rounded-lg px-2 text-xs text-zinc-500 transition hover:bg-zinc-100 dark:text-zinc-400 dark:hover:bg-zinc-800"
+                className="flex h-7 cursor-pointer items-center gap-1.5 whitespace-nowrap rounded-lg px-2 text-xs text-zinc-500 transition hover:bg-zinc-100 dark:text-zinc-400 dark:hover:bg-zinc-800"
               >
-                <ArrowUpFromLine size={14} />
+                <ArrowUpFromLine className="size-3.5 shrink-0" />
                 <span className="hidden sm:inline">Import</span>
               </button>
               <input
@@ -400,10 +400,11 @@ export default function TranscriptPanel() {
           )}
           <button
             onClick={toggleShowDeleted}
+            aria-label={showDeleted ? "Hide deleted words" : "Show deleted words"}
             title={showDeleted ? "Hide deleted words" : "Show deleted words"}
-            className="flex cursor-pointer h-7 items-center gap-1.5 rounded-lg px-2 text-xs text-zinc-500 transition hover:bg-zinc-100 dark:text-zinc-400 dark:hover:bg-zinc-800"
+            className="flex h-7 cursor-pointer items-center gap-1.5 rounded-lg px-2 text-xs text-zinc-500 transition hover:bg-zinc-100 dark:text-zinc-400 dark:hover:bg-zinc-800"
           >
-            {showDeleted ? <Eye size={14} /> : <EyeOff size={14} />}
+            {showDeleted ? <Eye className="size-3.5 shrink-0" /> : <EyeOff className="size-3.5 shrink-0" />}
           </button>
         </div>
       </div>
@@ -497,25 +498,25 @@ export default function TranscriptPanel() {
           {selection && !correcting && (
             <div
               data-transcript-toolbar
-              className="absolute z-20 flex -translate-x-1/2 items-center gap-0.5 rounded-xl border border-zinc-200 bg-white p-1 shadow-lg shadow-zinc-900/10 dark:border-zinc-700 dark:bg-zinc-800 dark:shadow-black/30"
+              className="absolute z-20 flex max-w-[calc(100%-16px)] -translate-x-1/2 items-center gap-0.5 overflow-x-auto rounded-xl border border-zinc-200 bg-white p-1 shadow-lg shadow-zinc-900/10 dark:border-zinc-700 dark:bg-zinc-800 dark:shadow-black/30"
               style={{ top: selection.top, left: selection.left }}
               onMouseDown={(e) => e.preventDefault()}
             >
               {selection.anyKept && (
                 <button
                   onClick={cutSelection}
-                  className="flex cursor-pointer items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-[13px] font-medium text-zinc-700 transition hover:bg-red-50 hover:text-red-600 dark:text-zinc-200 dark:hover:bg-red-950/50 dark:hover:text-red-400"
+                  className="flex cursor-pointer items-center gap-1.5 whitespace-nowrap rounded-lg px-2.5 py-1.5 text-[13px] font-medium text-zinc-700 transition hover:bg-red-50 hover:text-red-600 dark:text-zinc-200 dark:hover:bg-red-950/50 dark:hover:text-red-400"
                 >
-                  <Scissors size={13} />
+                  <Scissors className="size-3.5 shrink-0" />
                   Cut
                 </button>
               )}
               {selection.anyDeleted && (
                 <button
                   onClick={restoreSelection}
-                  className="flex cursor-pointer items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-[13px] font-medium text-zinc-700 transition hover:bg-emerald-50 hover:text-emerald-600 dark:text-zinc-200 dark:hover:bg-emerald-950/40 dark:hover:text-emerald-400"
+                  className="flex cursor-pointer items-center gap-1.5 whitespace-nowrap rounded-lg px-2.5 py-1.5 text-[13px] font-medium text-zinc-700 transition hover:bg-emerald-50 hover:text-emerald-600 dark:text-zinc-200 dark:hover:bg-emerald-950/40 dark:hover:text-emerald-400"
                 >
-                  <RotateCcw size={13} />
+                  <RotateCcw className="size-3.5 shrink-0" />
                   Restore
                 </button>
               )}
@@ -523,10 +524,10 @@ export default function TranscriptPanel() {
                 <button
                   onClick={removeSelectedFillers}
                   title={`Cut ${selectedFillerIds.length} filler word${selectedFillerIds.length === 1 ? "" : "s"} from this selection`}
-                  className="flex cursor-pointer items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-[13px] font-medium text-zinc-700 transition hover:bg-zinc-100 dark:text-zinc-200 dark:hover:bg-zinc-700"
+                  className="flex cursor-pointer items-center gap-1.5 whitespace-nowrap rounded-lg px-2.5 py-1.5 text-[13px] font-medium text-zinc-700 transition hover:bg-zinc-100 dark:text-zinc-200 dark:hover:bg-zinc-700"
                 >
-                  <WandSparkles size={13} />
-                  Remove fillers ({selectedFillerIds.length})
+                  <WandSparkles className="size-3.5 shrink-0" />
+                  Fillers ({selectedFillerIds.length})
                 </button>
               )}
               <Popover
@@ -544,9 +545,9 @@ export default function TranscriptPanel() {
                       aria-expanded={speakerMenuOpen}
                       onMouseDown={(event) => event.stopPropagation()}
                       onClick={() => setSpeakerMenuOpen((open) => !open)}
-                      className="flex cursor-pointer items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-[13px] font-medium text-zinc-700 transition hover:bg-zinc-100 dark:text-zinc-200 dark:hover:bg-zinc-700"
+                      className="flex cursor-pointer items-center gap-1.5 whitespace-nowrap rounded-lg px-2.5 py-1.5 text-[13px] font-medium text-zinc-700 transition hover:bg-zinc-100 dark:text-zinc-200 dark:hover:bg-zinc-700"
                     >
-                      <UserRound size={13} />
+                      <UserRound className="size-3.5 shrink-0" />
                       Speaker
                     </button>
                   </PopoverTrigger>
@@ -584,9 +585,9 @@ export default function TranscriptPanel() {
               </Popover>
               <button
                 onClick={openCorrect}
-                className="flex cursor-pointer items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-[13px] font-medium text-zinc-700 transition hover:bg-zinc-100 dark:text-zinc-200 dark:hover:bg-zinc-700"
+                className="flex cursor-pointer items-center gap-1.5 whitespace-nowrap rounded-lg px-2.5 py-1.5 text-[13px] font-medium text-zinc-700 transition hover:bg-zinc-100 dark:text-zinc-200 dark:hover:bg-zinc-700"
               >
-                <Pencil size={13} />
+                <Pencil className="size-3.5 shrink-0" />
                 Correct
               </button>
             </div>
