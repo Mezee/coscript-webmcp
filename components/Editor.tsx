@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { Group, Panel, Separator, useDefaultLayout } from "react-resizable-panels";
 import { useEditorStore } from "@/lib/store";
 import { extractAudio, getFFmpeg } from "@/lib/ffmpeg";
@@ -14,7 +14,7 @@ import TranscriptPanel from "./TranscriptPanel";
 import MediaPreview from "./MediaPreview";
 import Timeline from "./Timeline";
 import ExportDialog from "./ExportDialog";
-import { Download, Redo2, Undo2 } from "lucide-react";
+import { Download, Redo2, RefreshCw, Undo2 } from "lucide-react";
 import LogoLoader from "./LogoLoader";
 import SettingsMenu from "./SettingsMenu";
 import ModelSelector, {
@@ -24,7 +24,10 @@ import ModelSelector, {
 } from "./ModelSelector";
 import ImportTranscriptOption from "./ImportTranscriptOption";
 import AgentPanel from "./AgentPanel";
+import RetranscribeDialog from "./RetranscribeDialog";
 import { EditorActionWebMCPTools, ProcessingWebMCPTools } from "./webmcp/WebMCPRegistrars";
+import type { TranscriptionModel } from "@/lib/models";
+import type { TranscriptLanguage } from "@/lib/languages";
 
 /** How long the desktop mode-change overlay stays up. Matches the macOS
  *  `setBounds(..., animate)` duration plus a small buffer so the layout
@@ -124,6 +127,8 @@ export default function Editor() {
   const videoFile = useEditorStore((s) => s.videoFile);
   const skipTranscription = useEditorStore((s) => s.skipTranscription);
   const loadVideo = useEditorStore((s) => s.loadVideo);
+  const audio = useEditorStore((s) => s.audio);
+  const prepareRetranscription = useEditorStore((s) => s.prepareRetranscription);
   const { transcribe } = useTranscriber();
 
   const canUndo = useEditorStore((s) => s.past.length > 0);
@@ -133,7 +138,18 @@ export default function Editor() {
   const setExportOpen = useEditorStore((s) => s.setExportOpen);
 
   const [modeTransitioning, setModeTransitioning] = useState(false);
+  const [retranscribeOpen, setRetranscribeOpen] = useState(false);
   const wasIdle = useRef(status === "idle");
+
+  const startRetranscription = useCallback(
+    (model: TranscriptionModel, language: TranscriptLanguage) => {
+      if (!audio) return;
+      setRetranscribeOpen(false);
+      prepareRetranscription(model, language);
+      transcribe(audio, audio.length / VAD_SAMPLE_RATE);
+    },
+    [audio, prepareRetranscription, transcribe]
+  );
 
   // Processing pipeline: load ffmpeg -> extract audio -> (maybe) transcribe.
   // Restored projects already have words; they only need PCM for the waveform.
@@ -268,6 +284,16 @@ export default function Editor() {
             </button>
             <div className="mx-1 h-5 w-px bg-zinc-200 dark:bg-zinc-700" />
             <button
+              onClick={() => setRetranscribeOpen(true)}
+              disabled={status !== "ready" || !audio}
+              title="Re-transcribe media"
+              className="flex h-8 items-center gap-1.5 rounded-lg px-2.5 text-[13px] font-medium text-zinc-600 transition hover:bg-zinc-100 hover:text-zinc-900 disabled:cursor-not-allowed disabled:opacity-40 dark:text-zinc-300 dark:hover:bg-zinc-800 dark:hover:text-zinc-50"
+            >
+              <RefreshCw size={14} />
+              <span className="hidden sm:inline">Re-transcribe</span>
+            </button>
+            <div className="mx-1 h-5 w-px bg-zinc-200 dark:bg-zinc-700" />
+            <button
               onClick={() => setExportOpen(true)}
               disabled={status !== "ready" && status !== "exporting"}
               className="flex ml-1 h-8 items-center gap-1.5 rounded-full bg-zinc-900 px-4 text-[13px] font-medium text-white transition hover:bg-zinc-700 cursor-pointer disabled:cursor-not-allowed disabled:opacity-40 dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-zinc-200"
@@ -295,6 +321,12 @@ export default function Editor() {
         </div>
       )}
       <ExportDialog />
+      {retranscribeOpen && (
+        <RetranscribeDialog
+          onClose={() => setRetranscribeOpen(false)}
+          onConfirm={startRetranscription}
+        />
+      )}
     </div>
   );
 }

@@ -30,7 +30,7 @@ import {
   loadModelPreference,
   saveModelPreference,
 } from "./models";
-import type { ModelChoice } from "./models";
+import type { ModelChoice, TranscriptionModel } from "./models";
 import {
   DEFAULT_TRANSCRIPT_LANGUAGE,
   isTranscriptLanguage,
@@ -123,6 +123,11 @@ interface EditorState {
   /** Delete a saved project; if it is the active one, resets to the home screen. */
   removeProject: (id: string) => Promise<void>;
   setModel: (m: ModelChoice) => void;
+  /** Clear transcript-derived edits before running a selected speech model again. */
+  prepareRetranscription: (
+    model: TranscriptionModel,
+    transcriptLanguage: TranscriptLanguage
+  ) => void;
   setTranscriptLanguage: (language: TranscriptLanguage) => void;
   setPendingTranscript: (t: PendingTranscript | null) => void;
   setDuration: (d: number) => void;
@@ -373,6 +378,32 @@ export const useEditorStore = create<EditorState>((set, get) => ({
     } else {
       set({ model });
     }
+  },
+  prepareRetranscription: (model, transcriptLanguage) => {
+    const previousExport = get().exportUrl;
+    if (previousExport) URL.revokeObjectURL(previousExport);
+    saveModelPreference(model);
+    saveTranscriptLanguagePreference(transcriptLanguage);
+    set({
+      model,
+      transcriptLanguage,
+      pendingTranscript: null,
+      skipTranscription: false,
+      words: [],
+      manualCuts: [],
+      sceneBoundaries: [],
+      past: [],
+      future: [],
+      selectedClipIndex: null,
+      selectedWordIds: [],
+      nextManualCutId: 1,
+      nextBoundaryId: 1,
+      gestureActive: false,
+      partialText: "",
+      error: null,
+      exportUrl: null,
+      exportOpen: false,
+    });
   },
   setTranscriptLanguage: (transcriptLanguage) => {
     saveTranscriptLanguagePreference(transcriptLanguage);
