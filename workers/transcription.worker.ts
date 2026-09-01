@@ -125,22 +125,6 @@ function makeDownloadTracker(label: string) {
   };
 }
 
-/**
- * Whether a model's weights are already in the transformers.js browser cache.
- * Used purely to label the progress UI accurately ("Loading … from cache"
- * instead of "Downloading …"): transformers.js emits identical progress
- * events when reading a cached model from disk as when downloading it.
- */
-async function isModelCached(modelId: string): Promise<boolean> {
-  try {
-    const cache = await caches.open(env.cacheKey ?? "transformers-cache");
-    const keys = await cache.keys();
-    return keys.some((req) => req.url.includes(modelId) && req.url.includes(".onnx"));
-  } catch {
-    return false;
-  }
-}
-
 /** Once set, this worker stays on WASM — a lost WebGPU session cannot be reused. */
 let forceWasm = false;
 /** Device the current ASR pipeline is running on. */
@@ -167,9 +151,9 @@ async function getAsr(choice: WhisperModel) {
   if (!promise) {
     const device = await pickDevice();
     asrDevice = device;
-    const label = (await isModelCached(id))
-      ? "Loading speech model from cache…"
-      : "Downloading speech model…";
+    // transformers.js reports the same loading phase for a cache hit and a
+    // first-time fetch, so avoid claiming that every run is a new download.
+    const label = "Loading speech model…";
     promise = pipeline("automatic-speech-recognition", id, {
       dtype: dtype[device],
       device,

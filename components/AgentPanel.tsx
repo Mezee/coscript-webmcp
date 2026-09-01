@@ -77,7 +77,7 @@ export default function AgentPanel() {
         <section className="px-4 py-3">
           <h3 className="mb-1 text-xs font-medium text-zinc-900 dark:text-zinc-100">Agent History</h3>
           {events.length === 0 ? (
-            <p className="text-pretty text-[11px] leading-4 text-zinc-500 dark:text-zinc-400">Recent assistant actions will appear here.</p>
+            <p className="text-pretty text-[11px] leading-4 text-zinc-500 dark:text-zinc-400">Ask the assistant to edit this project and its actions will appear here.</p>
           ) : events.slice(0, 8).map((event) => (
             <div key={event.id} className="flex items-start gap-2 border-b border-zinc-100 py-2.5 last:border-b-0 dark:border-zinc-800">
               <span className={`mt-0.5 shrink-0 ${eventTone(event)}`}>{eventIcon(event)}</span>

@@ -5,7 +5,6 @@ import {
   ArrowUpFromLine,
   Eye,
   EyeOff,
-  FileText,
   Merge,
   Pencil,
   RotateCcw,
