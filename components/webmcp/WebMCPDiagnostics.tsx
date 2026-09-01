@@ -17,7 +17,6 @@ function statusClass(status: string) {
 }
 
 export function WebMCPDiagnostics() {
-  const scopes = useWebMCPDiagnosticsStore((state) => state.scopes);
   const tools = useWebMCPDiagnosticsStore((state) => state.tools);
   const status = useEditorStore((state) => state.status);
   const projectId = useEditorStore((state) => state.projectId);
@@ -29,33 +28,26 @@ export function WebMCPDiagnostics() {
   const task = useAgentStore((state) => state.task);
   const activeOperation = useAgentStore((state) => state.activeOperation);
   const proposedPlan = useAgentStore((state) => state.proposedPlan);
+  const problemTools = tools.filter((tool) => tool.status === "failed" || tool.status === "unsupported");
+
+  if (!problemTools.length) return null;
 
   return (
     <details className="border-t border-zinc-200 dark:border-zinc-800">
       <summary className="flex cursor-pointer list-none items-center justify-between px-4 py-3 text-xs font-medium text-zinc-700 marker:content-none dark:text-zinc-300">
-        <span>WebMCP diagnostics</span>
+        <span>Connection details</span>
         <ChevronDown size={14} className="transition-transform [[open]_&]:rotate-180" />
       </summary>
       <div className="max-h-72 space-y-4 overflow-y-auto border-t border-zinc-100 px-4 py-3 text-[10px] dark:border-zinc-800">
         <section>
-          <p className="mb-1.5 font-mono uppercase text-zinc-400">Registration scopes</p>
-          {scopes.length ? scopes.map((scope) => (
-            <div key={scope.name} className="mb-1 rounded border border-zinc-200 px-2 py-1.5 dark:border-zinc-700">
-              <strong className="font-mono text-zinc-700 dark:text-zinc-200">{scope.name}</strong>
-              <p className="mt-0.5 break-words text-zinc-500 dark:text-zinc-400">{scope.toolNames.join(", ")}</p>
-            </div>
-          )) : <p className="text-zinc-500">No active registration scopes.</p>}
-        </section>
-
-        <section>
-          <p className="mb-1.5 font-mono uppercase text-zinc-400">SDK registration results</p>
-          {tools.length ? tools.map((tool) => (
+          <p className="mb-1.5 font-mono uppercase text-zinc-400">Tools needing attention</p>
+          {problemTools.map((tool) => (
             <div key={tool.name} className="mb-1 rounded border border-zinc-200 px-2 py-1.5 dark:border-zinc-700">
               <div className="flex items-center justify-between gap-2"><strong className="truncate font-mono text-zinc-700 dark:text-zinc-200">{tool.name}</strong><span className={`shrink-0 font-medium ${statusClass(tool.status)}`}>{tool.status}</span></div>
               <p className="mt-0.5 font-mono text-zinc-500">{tool.stableKey} · {formatTime(tool.registrationTime)}</p>
               {tool.error && <p className="mt-0.5 text-red-600 dark:text-red-400">{tool.error}</p>}
             </div>
-          )) : <p className="text-zinc-500">No tools are currently registered.</p>}
+          ))}
         </section>
 
         <section>

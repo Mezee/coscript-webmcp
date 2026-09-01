@@ -17,10 +17,20 @@ function formatDuration(seconds: number) {
   return `${Math.floor(safe / 60)}:${(safe % 60).toString().padStart(2, "0")}`;
 }
 
+function formatTime(timestamp: string) {
+  return new Date(timestamp).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+}
+
 function eventIcon(event: Pick<AgentActivityEvent, "status" | "kind">) {
-  if (event.status === "running") return <Loader2 size={10} className="animate-spin" />;
-  if (event.status === "failed" || event.kind === "error") return <AlertCircle size={10} />;
-  return <CheckCircle2 size={10} />;
+  if (event.status === "running") return <Loader2 size={11} className="animate-spin" />;
+  if (event.status === "failed" || event.kind === "error") return <AlertCircle size={11} />;
+  return <CheckCircle2 size={11} />;
+}
+
+function eventTone(event: Pick<AgentActivityEvent, "status" | "kind">) {
+  if (event.status === "failed" || event.kind === "error") return "text-red-600 dark:text-red-400";
+  if (event.status === "running") return "text-zinc-500 dark:text-zinc-400";
+  return "text-zinc-500 dark:text-zinc-400";
 }
 
 export default function AgentPanel() {
@@ -33,6 +43,9 @@ export default function AgentPanel() {
   const proposedPlan = useAgentStore((state) => state.proposedPlan);
   const latest = transactions[0];
   const native = connection === "webmcp";
+  const ready = status === "ready";
+  const activityLabel = activeOperation ?? task?.activeStep ?? (task ? "Editing in progress" : ready ? "Ready to edit" : "Preparing editor");
+  const activityDetail = task?.goal ?? (ready ? "Shared editor state is up to date" : "Load a video to begin editing");
 
   const cleanUp = () => {
     manageAgentTask("start", "Clean up this video");
@@ -49,6 +62,7 @@ export default function AgentPanel() {
       manageAgentTask("cancel");
     }
   };
+
   const previewPlan = () => {
     if (!proposedPlan) return;
     const range = getPlanPreviewRange(proposedPlan);
@@ -58,77 +72,77 @@ export default function AgentPanel() {
   return (
     <aside className="hidden w-[280px] shrink-0 flex-col border-l border-zinc-200 bg-white lg:flex dark:border-zinc-800 dark:bg-zinc-900">
       <PlanWebMCPTools />
-      <div className="flex items-start justify-between border-b border-zinc-200 px-4 py-4 dark:border-zinc-800">
-        <div>
-          <p className="mb-1 font-mono text-[10px] uppercase text-zinc-400">Agent workspace</p>
-          <h2 className="text-sm font-semibold text-zinc-900 text-balance dark:text-zinc-100">Agent activity</h2>
+
+      <header className="flex items-center justify-between border-b border-zinc-200 px-4 py-3 dark:border-zinc-800">
+        <h2 className="text-sm font-medium text-zinc-900 text-balance dark:text-zinc-100">Assistant</h2>
+        <span className={`flex items-center gap-1.5 text-[11px] ${native ? "text-emerald-700 dark:text-emerald-400" : "text-zinc-500 dark:text-zinc-400"}`}>
+          <i className={`size-1.5 rounded-full ${native ? "bg-emerald-500" : "bg-zinc-400"}`} />
+          {native ? "Connected" : "Available"}
+        </span>
+      </header>
+
+      <div className="flex items-start gap-2 border-b border-zinc-200 px-4 py-3 dark:border-zinc-800">
+        <CircleDot size={14} className={`mt-0.5 shrink-0 ${activeOperation ? "text-zinc-500" : native ? "text-emerald-600 dark:text-emerald-400" : "text-zinc-400"}`} />
+        <div className="min-w-0">
+          <p className="truncate text-xs font-medium text-zinc-900 dark:text-zinc-100">{activityLabel}</p>
+          <p className="mt-0.5 text-pretty text-[11px] leading-4 text-zinc-500 dark:text-zinc-400">{activityDetail}</p>
         </div>
-        <span className={`flex items-center gap-1.5 font-mono text-[10px] ${native ? "text-emerald-600" : "text-amber-600"}`}>
-          <i className={`size-1.5 rounded-full ${native ? "bg-emerald-500" : "bg-amber-500"}`} />
-          {native ? "WebMCP" : "Bridge ready"}
-        </span>
-      </div>
-
-      <div className="mx-4 mt-4 flex items-center gap-2 rounded-lg border border-zinc-200 bg-zinc-50 p-3 dark:border-zinc-700 dark:bg-zinc-800/70">
-        <span className="grid size-7 place-items-center rounded-full bg-amber-200 text-amber-900"><Sparkles size={14} /></span>
-        <span className="flex flex-col">
-          <strong className="text-xs text-zinc-900 dark:text-zinc-100">{native ? "Agent connected" : "WebMCP available"}</strong>
-          <span className="text-[10px] text-zinc-500">{native ? "Using native browser tools" : "Waiting for a compatible agent"}</span>
-        </span>
-      </div>
-
-      <div className="flex items-center gap-2 border-b border-zinc-200 px-4 py-4 dark:border-zinc-800">
-        <CircleDot size={14} className={activeOperation ? "text-amber-500" : "text-emerald-500"} />
-        <span className="flex min-w-0 flex-col">
-          <strong className="truncate text-xs text-zinc-900 dark:text-zinc-100">{activeOperation ?? task?.activeStep ?? (task ? "Editing task in progress" : "Ready to edit")}</strong>
-          <span className="text-[10px] text-zinc-500">{task?.goal ?? (status === "ready" ? "Human and agent share editor state" : "Load a video to begin editing")}</span>
-        </span>
       </div>
 
       <WebMCPDiagnostics />
 
-      {proposedPlan?.status === "proposed" && (
-        <section className="m-4 rounded-lg border border-amber-300 bg-amber-50 p-3 dark:border-amber-800 dark:bg-amber-950/30">
-          <div className="mb-2 flex items-center justify-between"><strong className="text-xs text-zinc-900 dark:text-zinc-100">Proposed edit plan</strong><span className="font-mono text-[10px] text-amber-700 dark:text-amber-400">{proposedPlan.operations.length} edits</span></div>
-          {proposedPlan.userPrompt && <p className="mb-2 line-clamp-2 text-pretty text-[10px] leading-4 text-zinc-600 dark:text-zinc-400">{proposedPlan.userPrompt}</p>}
-          <p className="mb-3 font-mono text-[10px] text-zinc-600 dark:text-zinc-300">{formatDuration(proposedPlan.beforeDuration)} → {formatDuration(proposedPlan.projectedDuration)}</p>
-          <div className="grid grid-cols-3 gap-1.5">
-            <button type="button" onClick={previewPlan} className="flex items-center justify-center gap-1 rounded-md border border-zinc-300 bg-white px-2 py-1.5 text-[10px] font-medium text-zinc-700 hover:bg-zinc-50 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-200"><Eye size={11} />Preview</button>
-            <button type="button" onClick={() => applyProposedPlan(proposedPlan.id)} className="flex items-center justify-center gap-1 rounded-md bg-zinc-900 px-2 py-1.5 text-[10px] font-medium text-white hover:bg-zinc-700 dark:bg-zinc-100 dark:text-zinc-900"><Check size={11} />Apply</button>
-            <button type="button" onClick={() => rejectProposedPlan(proposedPlan.id)} className="flex items-center justify-center gap-1 rounded-md border border-zinc-300 px-2 py-1.5 text-[10px] font-medium text-zinc-600 hover:bg-white dark:border-zinc-700 dark:text-zinc-300"><X size={11} />Reject</button>
-          </div>
+      <div className="min-h-0 flex-1 overflow-y-auto scrollbar-thin">
+        {proposedPlan?.status === "proposed" && (
+          <section className="border-b border-zinc-200 px-4 py-3 dark:border-zinc-800">
+            <div className="flex items-center justify-between gap-3">
+              <h3 className="text-xs font-medium text-zinc-900 dark:text-zinc-100">Proposed edit</h3>
+              <span className="tabular-nums text-[11px] text-zinc-500">{proposedPlan.operations.length} edits</span>
+            </div>
+            {proposedPlan.userPrompt && <p className="mt-1.5 line-clamp-2 text-pretty text-[11px] leading-4 text-zinc-500 dark:text-zinc-400">{proposedPlan.userPrompt}</p>}
+            <p className="mt-2 tabular-nums text-[11px] text-zinc-500">{formatDuration(proposedPlan.beforeDuration)} → {formatDuration(proposedPlan.projectedDuration)}</p>
+            <div className="mt-3 grid grid-cols-3 gap-2">
+              <button type="button" onClick={previewPlan} className="flex items-center justify-center gap-1 rounded-md border border-zinc-300 px-2 py-1.5 text-[11px] font-medium text-zinc-700 hover:bg-zinc-50 dark:border-zinc-700 dark:text-zinc-200 dark:hover:bg-zinc-800"><Eye size={11} />Preview</button>
+              <button type="button" onClick={() => applyProposedPlan(proposedPlan.id)} className="flex items-center justify-center gap-1 rounded-md bg-zinc-900 px-2 py-1.5 text-[11px] font-medium text-white hover:bg-zinc-700 dark:bg-zinc-100 dark:text-zinc-900"><Check size={11} />Apply</button>
+              <button type="button" onClick={() => rejectProposedPlan(proposedPlan.id)} className="flex items-center justify-center gap-1 rounded-md border border-zinc-300 px-2 py-1.5 text-[11px] font-medium text-zinc-700 hover:bg-zinc-50 dark:border-zinc-700 dark:text-zinc-200 dark:hover:bg-zinc-800"><X size={11} />Reject</button>
+            </div>
+          </section>
+        )}
+
+        <section className="px-4 py-3">
+          <h3 className="mb-1 text-xs font-medium text-zinc-900 dark:text-zinc-100">Activity</h3>
+          {events.length === 0 ? (
+            <p className="text-pretty text-[11px] leading-4 text-zinc-500 dark:text-zinc-400">Recent assistant actions will appear here.</p>
+          ) : events.slice(0, 8).map((event) => (
+            <div key={event.id} className="flex items-start gap-2 border-b border-zinc-100 py-2.5 last:border-b-0 dark:border-zinc-800">
+              <span className={`mt-0.5 shrink-0 ${eventTone(event)}`}>{eventIcon(event)}</span>
+              <div className="min-w-0 flex-1">
+                <p className="truncate text-[11px] font-medium text-zinc-800 dark:text-zinc-200">{event.title}</p>
+                <p className="line-clamp-2 text-pretty text-[10px] leading-4 text-zinc-500 dark:text-zinc-400">{event.detail}</p>
+              </div>
+              <time className="shrink-0 tabular-nums text-[10px] text-zinc-400">{formatTime(event.timestamp)}</time>
+            </div>
+          ))}
         </section>
-      )}
 
-      <div className="min-h-0 flex-1 overflow-y-auto border-b border-zinc-200 px-4 py-3 scrollbar-thin dark:border-zinc-800">
-        <p className="mb-2 font-mono text-[10px] uppercase text-zinc-400">Live activity</p>
-        {events.length === 0 ? (
-          <div className="flex h-full min-h-28 flex-col items-center justify-center text-center"><Sparkles size={16} className="mb-2 text-zinc-300" /><p className="text-[11px] font-medium text-zinc-500">Ready for an editing task</p><p className="mt-1 max-w-44 text-pretty text-[10px] leading-4 text-zinc-400">Agent progress and semantic edits will appear here.</p></div>
-        ) : events.slice(0, 12).map((event) => (
-          <div key={event.id} className="flex items-start gap-2 py-2.5">
-            <span className={`grid size-4 shrink-0 place-items-center rounded-full text-[9px] ${event.status === "failed" || event.kind === "error" ? "bg-red-100 text-red-700" : event.status === "running" ? "bg-amber-100 text-amber-700" : event.kind === "edit" ? "bg-amber-100 text-amber-700" : "bg-emerald-100 text-emerald-700"}`}>{eventIcon(event)}</span>
-            <span className="flex min-w-0 flex-1 flex-col"><strong className="truncate text-[11px] font-medium text-zinc-800 dark:text-zinc-200">{event.title}</strong><span className="line-clamp-2 text-pretty text-[10px] leading-4 text-zinc-500">{event.detail}</span></span>
-            <time className="shrink-0 font-mono text-[9px] text-zinc-400">{new Date(event.timestamp).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}</time>
-          </div>
-        ))}
-      </div>
-
-      {transactions.length > 0 && (
-        <div className="px-4 py-4">
-          <p className="mb-2 font-mono text-[10px] uppercase text-zinc-400">Edit history</p>
-          <div className="space-y-2">
+        {transactions.length > 0 && (
+          <section className="border-t border-zinc-200 px-4 py-3 dark:border-zinc-800">
+            <h3 className="mb-1 text-xs font-medium text-zinc-900 dark:text-zinc-100">Edit history</h3>
             {transactions.slice(0, 6).map((transaction) => (
-              <div key={transaction.id} className="rounded-md border border-zinc-200 px-2.5 py-2 dark:border-zinc-800">
-                <div className="flex items-center justify-between gap-2"><span className="truncate text-[11px] font-medium text-zinc-800 dark:text-zinc-200">{transaction.label}</span><span className="shrink-0 font-mono text-[9px] text-zinc-400">{transaction.undone ? "undone" : `${transaction.operations.length} edit${transaction.operations.length === 1 ? "" : "s"}`}</span></div>
-                <div className="mt-1 flex items-center justify-between gap-2 text-[10px] text-zinc-500"><span>{formatDuration(transaction.beforeDuration)} → {formatDuration(transaction.afterDuration)}</span><button type="button" onClick={undoAgentEdit} disabled={transaction.undone || transaction.id !== latest?.id} className="inline-flex items-center gap-1 hover:text-zinc-800 disabled:cursor-not-allowed disabled:opacity-40 dark:hover:text-zinc-200"><RotateCcw size={10} />Undo</button></div>
+              <div key={transaction.id} className="flex items-start gap-2 border-b border-zinc-100 py-2.5 last:border-b-0 dark:border-zinc-800">
+                <CheckCircle2 size={11} className="mt-0.5 shrink-0 text-zinc-500 dark:text-zinc-400" />
+                <div className="min-w-0 flex-1">
+                  <p className="truncate text-[11px] font-medium text-zinc-800 dark:text-zinc-200">{transaction.label}</p>
+                  <p className="mt-0.5 tabular-nums text-[10px] text-zinc-500">{formatDuration(transaction.beforeDuration)} → {formatDuration(transaction.afterDuration)} · {transaction.undone ? "Undone" : `${transaction.operations.length} edit${transaction.operations.length === 1 ? "" : "s"}`}</p>
+                </div>
+                <button type="button" onClick={undoAgentEdit} disabled={transaction.undone || transaction.id !== latest?.id} className="inline-flex shrink-0 items-center gap-1 text-[10px] font-medium text-zinc-500 hover:text-zinc-900 disabled:cursor-not-allowed disabled:opacity-40 dark:hover:text-zinc-100"><RotateCcw size={10} />Undo</button>
               </div>
             ))}
-          </div>
-        </div>
-      )}
+          </section>
+        )}
+      </div>
 
-      <div className="border-t border-zinc-200 p-4 dark:border-zinc-800">
-        <button type="button" onClick={cleanUp} disabled={status !== "ready" || activeOperation != null} className="flex w-full items-center justify-between rounded-md bg-zinc-900 px-3 py-2.5 text-left text-xs font-medium text-white hover:bg-zinc-700 disabled:cursor-not-allowed disabled:opacity-40 dark:bg-zinc-100 dark:text-zinc-900"><span>Clean up video</span><Sparkles size={13} /></button>
+      <div className="border-t border-zinc-200 p-3 dark:border-zinc-800">
+        <button type="button" onClick={cleanUp} disabled={!ready || activeOperation != null} className="flex w-full items-center justify-center gap-2 rounded-md border border-zinc-300 px-3 py-2 text-xs font-medium text-zinc-800 hover:bg-zinc-50 disabled:cursor-not-allowed disabled:opacity-40 dark:border-zinc-700 dark:text-zinc-200 dark:hover:bg-zinc-800"><Sparkles size={13} />Clean up video</button>
       </div>
     </aside>
   );

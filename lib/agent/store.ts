@@ -18,6 +18,7 @@ interface AgentState {
   setActiveOperation: (operation: string | null) => void;
   addEvent: (event: Omit<AgentActivityEvent, "id" | "timestamp">) => string;
   updateEvent: (id: string, patch: Partial<Omit<AgentActivityEvent, "id" | "timestamp">>) => void;
+  clearWebMCPFailures: () => void;
   addTransaction: (transaction: AgentEditTransaction) => void;
   markLatestUndone: (undone: boolean) => void;
   setProposedPlan: (plan: AgentEditPlan | null) => void;
@@ -52,6 +53,9 @@ export const useAgentStore = create<AgentState>((set) => ({
   },
   updateEvent: (id, patch) => set((state) => ({
     events: state.events.map((event) => event.id === id ? { ...event, ...patch } : event),
+  })),
+  clearWebMCPFailures: () => set((state) => ({
+    events: state.events.filter((event) => !event.title.startsWith("WebMCP registration failed:")),
   })),
   addTransaction: (transaction) => set((state) => ({
     transactions: [transaction, ...state.transactions].slice(0, 50),

@@ -62,7 +62,9 @@ function scheduleCommit() {
       if (activeRegistration !== registration || registration.signal.aborted) return;
       useWebMCPDiagnosticsStore.getState().recordResults(results);
       const failed = results.filter((result) => result.state === "failed");
-      useAgentStore.getState().setConnection(results.some((result) => result.state === "registered") ? "webmcp" : "fallback");
+      const connected = results.some((result) => result.state === "registered");
+      useAgentStore.getState().setConnection(connected ? "webmcp" : "fallback");
+      if (connected) useAgentStore.getState().clearWebMCPFailures();
       for (const result of failed) {
         useAgentStore.getState().addEvent({
           title: `WebMCP registration failed: ${result.name}`,
