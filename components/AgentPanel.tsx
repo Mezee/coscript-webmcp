@@ -1,6 +1,6 @@
 "use client";
 
-import { AlertCircle, Check, CheckCircle2, CircleDot, Eye, Loader2, RotateCcw, Sparkles, X } from "lucide-react";
+import { AlertCircle, Check, CheckCircle2, Eye, Loader2, RotateCcw, Sparkles, X } from "lucide-react";
 import { useEditorStore } from "@/lib/store";
 import { removeFillers } from "@/lib/agent/edit-commands";
 import { undoAgentEdit } from "@/lib/agent/history";
@@ -37,15 +37,12 @@ export default function AgentPanel() {
   const status = useEditorStore((state) => state.status);
   const connection = useAgentStore((state) => state.connection);
   const activeOperation = useAgentStore((state) => state.activeOperation);
-  const task = useAgentStore((state) => state.task);
   const events = useAgentStore((state) => state.events);
   const transactions = useAgentStore((state) => state.transactions);
   const proposedPlan = useAgentStore((state) => state.proposedPlan);
   const latest = transactions[0];
   const native = connection === "webmcp";
   const ready = status === "ready";
-  const activityLabel = activeOperation ?? task?.activeStep ?? (task ? "Editing in progress" : ready ? "Ready to edit" : "Preparing editor");
-  const activityDetail = task?.goal ?? (ready ? "Shared editor state is up to date" : "Load a video to begin editing");
 
   const cleanUp = () => {
     manageAgentTask("start", "Clean up this video");
@@ -80,14 +77,6 @@ export default function AgentPanel() {
           {native ? "Connected" : "Available"}
         </span>
       </header>
-
-      <div className="flex items-start gap-2 border-b border-zinc-200 px-4 py-3 dark:border-zinc-800">
-        <CircleDot size={14} className={`mt-0.5 shrink-0 ${activeOperation ? "text-zinc-500" : native ? "text-emerald-600 dark:text-emerald-400" : "text-zinc-400"}`} />
-        <div className="min-w-0">
-          <p className="truncate text-xs font-medium text-zinc-900 dark:text-zinc-100">{activityLabel}</p>
-          <p className="mt-0.5 text-pretty text-[11px] leading-4 text-zinc-500 dark:text-zinc-400">{activityDetail}</p>
-        </div>
-      </div>
 
       <WebMCPDiagnostics />
 
