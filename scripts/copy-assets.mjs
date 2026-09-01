@@ -3,6 +3,7 @@
  * served fully offline (no CDN requests at runtime):
  *   - @ffmpeg/core-mt  -> public/vendor/ffmpeg/  (audio extraction + export)
  *   - onnxruntime-web  -> public/vendor/ort/     (transformers.js inference)
+ *   - Parakeet's ORT   -> public/vendor/ort-parakeet/ (Parakeet inference)
  * Runs automatically on `npm install` (postinstall).
  */
 import { cpSync, mkdirSync, readdirSync, readFileSync, writeFileSync } from "node:fs";
@@ -39,6 +40,37 @@ for (const f of readdirSync(ortSrc)) {
   }
 }
 
+const parakeetOrtSrc = join(
+  root,
+  "node_modules/parakeet.js/node_modules/onnxruntime-web/dist"
+);
+const parakeetOrtDst = join(root, "public/vendor/ort-parakeet");
+mkdirSync(parakeetOrtDst, { recursive: true });
+for (const f of readdirSync(parakeetOrtSrc)) {
+  if (/^ort-wasm-simd-threaded.*\.(wasm|mjs)$/.test(f)) {
+    cpSync(join(parakeetOrtSrc, f), join(parakeetOrtDst, f));
+  }
+}
+
+// parakeet.js 1.4.4 accepts `wasmPaths` but does not apply it before falling
+// back to a CDN. Keep the tiny vendor correction in postinstall so the app
+// always uses the bundled 1.24.1 runtime above, including offline.
+const parakeetBackend = join(root, "node_modules/parakeet.js/src/backend.js");
+const parakeetBackendSource = readFileSync(parakeetBackend, "utf8");
+const unpatchedWasmPathCheck = "if (!ort.env.wasm.wasmPaths) {";
+const patchedWasmPathCheck =
+  "if (wasmPaths) {\n" +
+  "    ort.env.wasm.wasmPaths = wasmPaths;\n" +
+  "  } else if (!ort.env.wasm.wasmPaths) {";
+if (parakeetBackendSource.includes(unpatchedWasmPathCheck)) {
+  writeFileSync(
+    parakeetBackend,
+    parakeetBackendSource.replace(unpatchedWasmPathCheck, patchedWasmPathCheck)
+  );
+} else if (!parakeetBackendSource.includes("if (wasmPaths) {")) {
+  throw new Error("Could not apply the Parakeet local-WASM compatibility patch.");
+}
+
 // coi-serviceworker provides COOP/COEP headers on static hosts (GitHub Pages)
 // that can't send them, keeping cross-origin isolation for SharedArrayBuffer.
 // A config prelude is prepended: always use COEP "credentialless" (needed for
@@ -57,4 +89,4 @@ writeFileSync(
   coiPrelude + readFileSync(coiSrc, "utf8")
 );
 
-console.log("[copy-assets] ffmpeg core + onnxruntime wasm + coi-serviceworker copied to public/");
+console.log("[copy-assets] ffmpeg core + onnxruntime wasm + Parakeet runtime + coi-serviceworker copied to public/");

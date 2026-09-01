@@ -1,6 +1,11 @@
-/** Transcription source choices offered on the upload screen. */
+/** Whisper variants executed through transformers.js. */
 export type WhisperModel = "base" | "small";
-export type ModelChoice = WhisperModel | "import";
+/** Parakeet variants executed through parakeet.js. */
+export type ParakeetModel = "parakeet-tdt-0.6b-v2";
+/** Any built-in model that can generate a transcript. */
+export type TranscriptionModel = WhisperModel | ParakeetModel;
+/** Transcription source choices offered on the upload screen. */
+export type ModelChoice = TranscriptionModel | "import";
 
 type DType = "fp32" | "fp16" | "q8" | "int8" | "uint8" | "q4" | "q4f16" | "bnb4";
 
@@ -60,32 +65,55 @@ export const MODELS: Record<WhisperModel, ModelInfo> = {
   },
 };
 
+/** Metadata for non-Whisper models. Kept separate because their runtimes differ. */
+export const PARAKEET_MODELS: Record<ParakeetModel, Omit<ModelInfo, "dtype">> = {
+  "parakeet-tdt-0.6b-v2": {
+    id: "parakeet-tdt-0.6b-v2",
+    label: "Parakeet TDT 0.6B v2",
+    description: "Higher-accuracy English transcription with native word timing.",
+    size: "~700 MB · English",
+  },
+};
+
 export function isWhisperModel(value: unknown): value is WhisperModel {
   return value === "base" || value === "small";
 }
 
+export function isParakeetModel(value: unknown): value is ParakeetModel {
+  return value === "parakeet-tdt-0.6b-v2";
+}
+
+export function isTranscriptionModel(value: unknown): value is TranscriptionModel {
+  return isWhisperModel(value) || isParakeetModel(value);
+}
+
+/** Get picker metadata for either transcription runtime. */
+export function getTranscriptionModelInfo(model: TranscriptionModel) {
+  return isWhisperModel(model) ? MODELS[model] : PARAKEET_MODELS[model];
+}
+
 export function isModelChoice(value: unknown): value is ModelChoice {
-  return isWhisperModel(value) || value === "import";
+  return isTranscriptionModel(value) || value === "import";
 }
 
 const MODEL_STORAGE_KEY = "rescript.model";
 
-/** Read the last-selected Whisper model from localStorage (defaults to base). */
-export function loadModelPreference(): WhisperModel {
+/** Read the last-selected transcription model from localStorage (defaults to base). */
+export function loadModelPreference(): TranscriptionModel {
   if (typeof window === "undefined") return "base";
   try {
     const raw = window.localStorage.getItem(MODEL_STORAGE_KEY);
     // Ignore a stale "import" preference — that choice is session-only until a
     // transcript file is picked again.
-    if (isWhisperModel(raw)) return raw;
+    if (isTranscriptionModel(raw)) return raw;
   } catch {
     // private mode / disabled storage
   }
   return "base";
 }
 
-/** Persist the selected Whisper model for the next visit. */
-export function saveModelPreference(model: WhisperModel) {
+/** Persist the selected transcription model for the next visit. */
+export function saveModelPreference(model: TranscriptionModel) {
   if (typeof window === "undefined") return;
   try {
     window.localStorage.setItem(MODEL_STORAGE_KEY, model);

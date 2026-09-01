@@ -2,8 +2,8 @@
  * Transcription worker: runs entirely in the browser.
  *
  * 1. Silero VAD (energy fallback) finds speech segments; silence is skipped.
- * 2. A Whisper-family model (see lib/models.ts) transcribes each segment with
- *    per-word timestamps, remapped onto the original timeline.
+ * 2. Whisper or Parakeet (see lib/models.ts) transcribes the audio with
+ *    per-word timestamps on the original timeline.
  * 3. Pyannote segmentation 3.0 assigns a speaker to each word.
  *
  * Models are fetched from the Hugging Face Hub on first use and cached in the
@@ -21,7 +21,11 @@ import {
   type AutomaticSpeechRecognitionPipeline,
 } from "@huggingface/transformers";
 import type { Word, WorkerRequest, WorkerResponse } from "@/lib/types";
-import { MODELS, type WhisperModel } from "@/lib/models";
+import {
+  MODELS,
+  isParakeetModel,
+  type WhisperModel,
+} from "@/lib/models";
 import { cleanTranscript } from "@/lib/hallucinations";
 import { alignWordsToSpeech } from "@/lib/align";
 import {
@@ -53,6 +57,12 @@ const SPEECH_PAD_S = 0.4;
 const WHISPER_LEAD_PAD_S = 0.5;
 
 type AsrChunk = { text: string; timestamp: [number, number | null] };
+type ParakeetInstance = import("parakeet.js").ParakeetModel;
+type ParakeetWord = {
+  text: string;
+  start_time: number;
+  end_time: number;
+};
 
 const post = (msg: WorkerResponse, transfer: Transferable[] = []) =>
   (self as unknown as Worker).postMessage(msg, transfer);
@@ -193,6 +203,39 @@ async function fallbackAsrToWasm(choice: WhisperModel) {
     value: null,
   });
   return getAsr(choice);
+}
+
+/** Parakeet TDT v2 is served as a browser-compatible ONNX model by parakeet.js. */
+let parakeetPromise: Promise<ParakeetInstance> | null = null;
+function getParakeet(): Promise<ParakeetInstance> {
+  if (!parakeetPromise) {
+    parakeetPromise = (async () => {
+      const { fromHub } = await import("parakeet.js");
+      return fromHub("parakeet-tdt-0.6b-v2", {
+        backend: "wasm",
+        // Keep the download and resident memory practical in browser WASM.
+        encoderQuant: "int8",
+        // The decoder is comparatively small but controls emitted tokens; fp16
+        // preserves accuracy better than the library default of int8.
+        decoderQuant: "fp16",
+        preprocessorBackend: "onnx",
+        wasmPaths: `${process.env.NEXT_PUBLIC_BASE_PATH ?? ""}/vendor/ort-parakeet/`,
+        progress: ({ loaded, total }) => {
+          if (total > 0) {
+            post({
+              type: "progress",
+              message: "Downloading Parakeet TDT v2…",
+              value: Math.min(1, loaded / total),
+            });
+          }
+        },
+      });
+    })();
+    parakeetPromise.catch(() => {
+      parakeetPromise = null;
+    });
+  }
+  return parakeetPromise;
 }
 
 /**
@@ -396,6 +439,20 @@ function wordsFromChunks(
   });
 }
 
+/** Preserve Parakeet's native word timing rather than realigning it for Whisper. */
+function wordsFromParakeet(words: ParakeetWord[], mediaDuration: number): Word[] {
+  return words.flatMap((word, id) => {
+    const text = word.text.trim();
+    if (!text) return [];
+    const start = Math.max(0, Math.min(word.start_time, mediaDuration));
+    const end = Math.max(
+      start + 0.02,
+      Math.min(Math.max(word.end_time, start), mediaDuration)
+    );
+    return [{ id, text, start, end, speaker: 0, deleted: false }];
+  });
+}
+
 /**
  * Load the diarization model. Started in the background while Whisper is
  * still transcribing, so the (small) speaker model is downloaded, cached,
@@ -469,19 +526,52 @@ function assignSpeakers(words: Word[], segments: DiarizationSegment[]) {
 self.onmessage = async (event: MessageEvent<WorkerRequest>) => {
   const { audio, duration, model, language } = event.data;
   try {
-    const choice: WhisperModel = model ?? "base";
+    const choice = model ?? "base";
     const transcriptLanguage = language ?? "en";
+
+    if (isParakeetModel(choice)) {
+      if (transcriptLanguage !== "en") {
+        throw new Error(
+          "Parakeet TDT 0.6B v2 supports English only. Choose English or use Whisper Small."
+        );
+      }
+
+      // Warm the diarizer while Parakeet downloads. Its own timestamps are
+      // already word-level, so do not run the Whisper VAD realignment pass.
+      getDiarizer().catch(() => {});
+      post({ type: "progress", message: "Loading Parakeet TDT v2…", value: null });
+      const parakeet = await getParakeet();
+      post({ type: "progress", message: "Transcribing with Parakeet…", value: 0 });
+      const result = await parakeet.transcribeLongAudio(audio, VAD_SAMPLE_RATE, {
+        returnTimestamps: "word",
+        chunkLengthS: 25,
+      });
+      const words = wordsFromParakeet(result.words ?? [], duration);
+      post({ type: "partial", text: result.text });
+
+      try {
+        post({ type: "progress", message: "Identifying speakers…", value: null });
+        const segments = await diarize(audio);
+        assignSpeakers(words, segments);
+      } catch (err) {
+        console.warn("Speaker diarization failed; using a single speaker.", err);
+      }
+
+      post({ type: "complete", words });
+      return;
+    }
+    const whisperChoice: WhisperModel = choice;
 
     // Overlap Whisper + Silero downloads; diarizer warms in the background.
     getDiarizer().catch(() => {});
-    const [asr, vad] = await Promise.all([getAsr(choice), getVad()]);
+    const [asr, vad] = await Promise.all([getAsr(whisperChoice), getVad()]);
     let transcriber = asr;
 
     post({ type: "progress", message: "Detecting speech…", value: 0 });
     const { segments: speechSegments, frames: speechFrames } =
       await detectSpeechSegments(audio, vad);
 
-    const { verbatimPrompt } = MODELS[choice];
+    const { verbatimPrompt } = MODELS[whisperChoice];
     const promptedIds = verbatimPrompt
       ? buildPromptedDecoderIds(transcriber, verbatimPrompt, transcriptLanguage)
       : null;
@@ -627,7 +717,7 @@ self.onmessage = async (event: MessageEvent<WorkerRequest>) => {
         chunkFloor = progressBefore.chunkFloor;
         chunkTokens = progressBefore.chunkTokens;
         post({ type: "partial", text: partial });
-        transcriber = await fallbackAsrToWasm(choice);
+        transcriber = await fallbackAsrToWasm(whisperChoice);
         chunks = await runSlice();
       }
 

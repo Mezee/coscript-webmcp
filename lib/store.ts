@@ -26,7 +26,7 @@ import {
 } from "./edits";
 import {
   isModelChoice,
-  isWhisperModel,
+  isTranscriptionModel,
   loadModelPreference,
   saveModelPreference,
 } from "./models";
@@ -60,13 +60,13 @@ interface EditorState {
   duration: number;
   /** Mono 16 kHz PCM of the media's audio track (used for waveform + ASR). */
   audio: Float32Array | null;
-  /** Transcript source selected on the upload screen (Whisper or import). */
+  /** Transcript source selected on the upload screen (speech model or import). */
   model: ModelChoice;
   /** Language hint sent to Whisper when transcribing. */
   transcriptLanguage: TranscriptLanguage;
   /**
    * Caption file parsed on the upload screen when source is "import".
-   * Cleared when switching back to a Whisper model or after media loads.
+   * Cleared when switching back to a speech model or after media loads.
    */
   pendingTranscript: PendingTranscript | null;
   /** IndexedDB project id when this session is persisted; null for a fresh upload mid-pipeline. */
@@ -116,7 +116,7 @@ interface EditorState {
   exportOpen: boolean;
 
   // Actions
-  /** Load media for editing. Pass `words` to skip Whisper and use that transcript. */
+  /** Load media for editing. Pass `words` to skip transcription and use that transcript. */
   loadVideo: (file: File, options?: { words?: Word[] }) => void;
   /** Restore a saved project from IndexedDB (no re-transcription). */
   openProject: (id: string) => Promise<void>;
@@ -291,7 +291,7 @@ export const useEditorStore = create<EditorState>((set, get) => ({
       mediaKind: kind,
       projectId: null,
       skipTranscription: Boolean(imported),
-      model: imported ? "import" : isWhisperModel(current) ? current : "base",
+      model: imported ? "import" : isTranscriptionModel(current) ? current : "base",
       pendingTranscript: null,
       status: "preparing",
       progress: {
@@ -367,7 +367,7 @@ export const useEditorStore = create<EditorState>((set, get) => ({
   },
 
   setModel: (model) => {
-    if (isWhisperModel(model)) {
+    if (isTranscriptionModel(model)) {
       saveModelPreference(model);
       set({ model, pendingTranscript: null });
     } else {

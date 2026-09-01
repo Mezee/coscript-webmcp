@@ -279,6 +279,7 @@ export default function UploadScreen({
                 <ModelSelector groupLabel="Transcript source">
                   <ModelOption id="base" />
                   <ModelOption id="small" />
+                  <ModelOption id="parakeet-tdt-0.6b-v2" />
                   <ModelOptionSeparator />
                   <LanguageSection />
                   <ModelOptionSeparator />

@@ -63,7 +63,7 @@ export interface SpeakerTurn {
 export type EditorStatus =
   | "idle" // no video loaded
   | "preparing" // loading ffmpeg / extracting audio
-  | "transcribing" // whisper + diarization running
+  | "transcribing" // speech model + diarization running
   | "ready" // editable
   | "exporting"
   | "error";
@@ -86,8 +86,8 @@ export interface WorkerRequest {
   audio: Float32Array;
   /** Total media duration in seconds (used for progress estimation). */
   duration: number;
-  /** Which Whisper model to use (see lib/models.ts). */
-  model: import("./models").WhisperModel;
-  /** Whisper language code for the transcript. */
+  /** Which built-in transcription model to use (see lib/models.ts). */
+  model: import("./models").TranscriptionModel;
+  /** Language hint for the transcription model. */
   language: import("./languages").TranscriptLanguage;
 }

@@ -25,7 +25,11 @@ import {
   TRANSCRIPT_LANGUAGES,
   type TranscriptLanguage,
 } from "@/lib/languages";
-import { MODELS, isWhisperModel, type ModelChoice } from "@/lib/models";
+import {
+  getTranscriptionModelInfo,
+  isTranscriptionModel,
+  type ModelChoice,
+} from "@/lib/models";
 import {
   hydrateModelPreference,
   hydrateTranscriptLanguagePreference,
@@ -98,7 +102,7 @@ export function useOptionTrigger(
 /**
  * Generic source / model dropdown. Pass option components as children
  * (`ModelOption`, or a custom option like `ImportTranscriptOption`).
- * With no children, renders the default Whisper Base / Small rows.
+ * With no children, renders the default transcription model rows.
  *
  * Options stay mounted (hidden when closed) so custom triggers remain registered.
  *
@@ -185,14 +189,14 @@ export default function ModelSelector({
     activeTrigger?.icon ?? (model === "import" ? FileText : AudioLines);
   const baseTriggerLabel =
     activeTrigger?.label ??
-    (isWhisperModel(model)
-      ? MODELS[model].label
+    (isTranscriptionModel(model)
+      ? getTranscriptionModelInfo(model).label
       : model === "import"
         ? "Import transcript"
         : String(model));
   const languageInfo = TRANSCRIPT_LANGUAGES[transcriptLanguage];
   const showLanguageInTrigger =
-    isWhisperModel(model) &&
+    isTranscriptionModel(model) &&
     !activeTrigger?.busy &&
     transcriptLanguage !== "en";
 
@@ -201,6 +205,7 @@ export default function ModelSelector({
     <>
       <ModelOption id="base" />
       <ModelOption id="small" />
+      <ModelOption id="parakeet-tdt-0.6b-v2" />
     </>
   );
 
@@ -294,7 +299,7 @@ export default function ModelSelector({
   );
 }
 
-/** Default option row: icon + label + optional meta. Whisper ids fill in from MODELS. */
+/** Default option row: icon + label + optional meta. Built-in model ids fill in from metadata. */
 export function ModelOption({
   id,
   label,
@@ -317,9 +322,15 @@ export function ModelOption({
   const selected = selector.value === id;
 
   const resolvedLabel =
-    label ?? (isWhisperModel(id) ? MODELS[id].label : id);
+    label ??
+    (isTranscriptionModel(id)
+      ? getTranscriptionModelInfo(id).label
+      : id);
   const resolvedMeta =
-    meta ?? (isWhisperModel(id) ? MODELS[id].size : undefined);
+    meta ??
+    (isTranscriptionModel(id)
+      ? getTranscriptionModelInfo(id).size
+      : undefined);
 
   const optionCtx = useMemo<ModelOptionContextValue>(
     () => ({
