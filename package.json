@@ -17,7 +17,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "test:agent": "tsx tests/agent-commands-test.ts",
+    "test:agent": "tsx tests/agent-commands-test.ts && tsx tests/webmcp-diagnostics-test.ts && tsx tests/webmcp-sdk-test.ts",
     "postinstall": "node scripts/copy-assets.mjs",
     "build:electron": "node scripts/build-electron.mjs",
     "typecheck:electron": "tsc -p electron/tsconfig.json --noEmit",

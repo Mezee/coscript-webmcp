@@ -56,7 +56,7 @@ function scheduleCommit() {
 
     useAgentStore.getState().setConnection("fallback");
     useWebMCPDiagnosticsStore.getState().beginRegistration(tools);
-    const registration = registerTools(tools, { telemetry: false });
+    const registration = registerTools(tools);
     activeRegistration = registration;
     void registration.ready.then((results) => {
       if (activeRegistration !== registration || registration.signal.aborted) return;
