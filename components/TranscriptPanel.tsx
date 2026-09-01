@@ -11,6 +11,7 @@ import {
   RotateCcw,
   RefreshCw,
   Scissors,
+  UserRound,
   VolumeOff,
   VolumeX,
   WandSparkles,
@@ -122,6 +123,7 @@ export default function TranscriptPanel() {
   const toggleShowDeleted = useEditorStore((s) => s.toggleShowDeleted);
   const deleteWords = useEditorStore((s) => s.deleteWords);
   const restoreWords = useEditorStore((s) => s.restoreWords);
+  const assignSpeaker = useEditorStore((s) => s.assignSpeaker);
   const cutRanges = useEditorStore((s) => s.cutRanges);
   const correctWords = useEditorStore((s) => s.correctWords);
   const importWords = useEditorStore((s) => s.importWords);
@@ -180,6 +182,10 @@ export default function TranscriptPanel() {
   });
 
   const turns = useMemo(() => groupWordsBySpeaker(words), [words]);
+  const speakerIds = useMemo(
+    () => [...new Set(words.map((word) => word.speaker))].sort((a, b) => a - b),
+    [words]
+  );
 
   const deletedCount = useMemo(() => cutOutIds.size, [cutOutIds]);
   const fillerIds = useMemo(() => findFillerWordIds(words), [words]);
@@ -232,6 +238,15 @@ export default function TranscriptPanel() {
     restoreWords(selection.ids);
     clearSelection();
   }, [selection, restoreWords, clearSelection]);
+
+  const assignSelectionSpeaker = useCallback(
+    (speaker: number) => {
+      if (!selection) return;
+      assignSpeaker(selection.ids, speaker);
+      clearSelection();
+    },
+    [selection, assignSpeaker, clearSelection]
+  );
 
   const openCorrect = useCallback(() => {
     if (!selection) return;
@@ -490,6 +505,28 @@ export default function TranscriptPanel() {
                   Restore
                 </button>
               )}
+              <label className="flex items-center gap-1 rounded-lg px-1.5 py-1 text-zinc-700 dark:text-zinc-200">
+                <UserRound size={13} className="shrink-0 text-zinc-500 dark:text-zinc-400" />
+                <span className="sr-only">Assign speaker</span>
+                <select
+                  defaultValue=""
+                  aria-label="Assign selected words to a speaker"
+                  onMouseDown={(event) => event.stopPropagation()}
+                  onChange={(event) => {
+                    const value = event.target.value;
+                    if (value) assignSelectionSpeaker(Number(value));
+                  }}
+                  className="h-7 max-w-28 cursor-pointer rounded-md bg-transparent px-1 text-[12px] font-medium outline-none hover:bg-zinc-100 dark:hover:bg-zinc-700"
+                >
+                  <option value="" disabled>Speaker</option>
+                  {speakerIds.map((speaker) => (
+                    <option key={speaker} value={speaker}>Speaker {speaker + 1}</option>
+                  ))}
+                  <option value={speakerIds.length > 0 ? Math.max(...speakerIds) + 1 : 0}>
+                    New speaker
+                  </option>
+                </select>
+              </label>
               <button
                 onClick={openCorrect}
                 className="flex cursor-pointer items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-[13px] font-medium text-zinc-700 transition hover:bg-zinc-100 dark:text-zinc-200 dark:hover:bg-zinc-700"

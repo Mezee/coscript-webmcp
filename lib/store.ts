@@ -151,6 +151,8 @@ interface EditorState {
   importWords: (words: Word[]) => void;
   deleteWords: (ids: number[]) => void;
   restoreWords: (ids: number[]) => void;
+  /** Assign selected transcript words to a diarized speaker. */
+  assignSpeaker: (ids: number[], speaker: number) => void;
   /** Cut arbitrary time ranges (e.g. detected silences) as manual cuts. */
   cutRanges: (ranges: TimeRange[]) => void;
   /** Replace the selected (contiguous) words with corrected text. */
@@ -535,6 +537,17 @@ export const useEditorStore = create<EditorState>((set, get) => ({
       words,
       manualCuts,
       nextManualCutId,
+    });
+  },
+  assignSpeaker: (ids, speaker) => {
+    if (ids.length === 0 || !Number.isInteger(speaker) || speaker < 0) return;
+    const idSet = new Set(ids);
+    const { words } = get();
+    if (!words.some((word) => idSet.has(word.id) && word.speaker !== speaker)) return;
+    pushEdit(get, set, {
+      words: words.map((word) =>
+        idSet.has(word.id) ? { ...word, speaker } : word
+      ),
     });
   },
   correctWords: (ids, text) => {
