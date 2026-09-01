@@ -1,14 +1,11 @@
 "use client";
 
-import { AlertCircle, Check, CheckCircle2, Eye, Loader2, RotateCcw, Sparkles, X } from "lucide-react";
-import { useEditorStore } from "@/lib/store";
-import { removeFillers } from "@/lib/agent/edit-commands";
+import { AlertCircle, Check, CheckCircle2, Eye, Loader2, RotateCcw, X } from "lucide-react";
 import { undoAgentEdit } from "@/lib/agent/history";
 import { previewRange } from "@/lib/agent/navigation";
 import { applyProposedPlan, getPlanPreviewRange, rejectProposedPlan } from "@/lib/agent/plans";
 import { useAgentStore } from "@/lib/agent/store";
 import type { AgentActivityEvent } from "@/lib/agent/types";
-import { manageAgentTask } from "@/lib/agent/task";
 import { PlanWebMCPTools } from "./webmcp/WebMCPRegistrars";
 import { WebMCPDiagnostics } from "./webmcp/WebMCPDiagnostics";
 
@@ -34,32 +31,12 @@ function eventTone(event: Pick<AgentActivityEvent, "status" | "kind">) {
 }
 
 export default function AgentPanel() {
-  const status = useEditorStore((state) => state.status);
   const connection = useAgentStore((state) => state.connection);
-  const activeOperation = useAgentStore((state) => state.activeOperation);
   const events = useAgentStore((state) => state.events);
   const transactions = useAgentStore((state) => state.transactions);
   const proposedPlan = useAgentStore((state) => state.proposedPlan);
   const latest = transactions[0];
   const native = connection === "webmcp";
-  const ready = status === "ready";
-
-  const cleanUp = () => {
-    manageAgentTask("start", "Clean up this video");
-    try {
-      removeFillers({ type: "project" }, "agent-panel");
-      manageAgentTask("complete");
-    } catch (error) {
-      useAgentStore.getState().addEvent({
-        title: "Cleanup task failed",
-        detail: error instanceof Error ? error.message : "Unknown cleanup error",
-        kind: "error",
-        status: "failed",
-      });
-      manageAgentTask("cancel");
-    }
-  };
-
   const previewPlan = () => {
     if (!proposedPlan) return;
     const range = getPlanPreviewRange(proposedPlan);
@@ -128,10 +105,6 @@ export default function AgentPanel() {
             ))}
           </section>
         )}
-      </div>
-
-      <div className="border-t border-zinc-200 p-3 dark:border-zinc-800">
-        <button type="button" onClick={cleanUp} disabled={!ready || activeOperation != null} className="flex w-full items-center justify-center gap-2 rounded-md border border-zinc-300 px-3 py-2 text-xs font-medium text-zinc-800 hover:bg-zinc-50 disabled:cursor-not-allowed disabled:opacity-40 dark:border-zinc-700 dark:text-zinc-200 dark:hover:bg-zinc-800"><Sparkles size={13} />Clean up video</button>
       </div>
     </aside>
   );

@@ -191,6 +191,11 @@ export default function TranscriptPanel() {
 
   const deletedCount = useMemo(() => cutOutIds.size, [cutOutIds]);
   const fillerIds = useMemo(() => findFillerWordIds(words), [words]);
+  const selectedFillerIds = useMemo(() => {
+    if (!selection) return [];
+    const selectedIds = new Set(selection.ids);
+    return fillerIds.filter((id) => selectedIds.has(id));
+  }, [selection, fillerIds]);
   const silenceRanges = useMemo(
     () => findSilenceRanges(words, duration, manualCuts),
     [words, duration, manualCuts]
@@ -240,6 +245,12 @@ export default function TranscriptPanel() {
     restoreWords(selection.ids);
     clearSelection();
   }, [selection, restoreWords, clearSelection]);
+
+  const removeSelectedFillers = useCallback(() => {
+    if (selectedFillerIds.length === 0) return;
+    deleteWords(selectedFillerIds);
+    clearSelection();
+  }, [selectedFillerIds, deleteWords, clearSelection]);
 
   const assignSelectionSpeaker = useCallback(
     (speaker: number) => {
@@ -506,6 +517,16 @@ export default function TranscriptPanel() {
                 >
                   <RotateCcw size={13} />
                   Restore
+                </button>
+              )}
+              {selectedFillerIds.length > 0 && (
+                <button
+                  onClick={removeSelectedFillers}
+                  title={`Cut ${selectedFillerIds.length} filler word${selectedFillerIds.length === 1 ? "" : "s"} from this selection`}
+                  className="flex cursor-pointer items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-[13px] font-medium text-zinc-700 transition hover:bg-zinc-100 dark:text-zinc-200 dark:hover:bg-zinc-700"
+                >
+                  <WandSparkles size={13} />
+                  Remove fillers ({selectedFillerIds.length})
                 </button>
               )}
               <Popover
