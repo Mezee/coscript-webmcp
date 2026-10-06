@@ -153,7 +153,7 @@ function createWindow(): BrowserWindow {
     minHeight: MIN_SIZE.height,
     // Light by default — appearance is a user preference in the renderer.
     backgroundColor: "#fafafa",
-    title: "Rescript",
+    title: "coscript",
     show: false,
     // macOS: drop the native title bar and let the page's top bar / upload drag
     // strip move the window instead. Windows and Linux keep their native frame

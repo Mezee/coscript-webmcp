@@ -3,8 +3,6 @@
 import { useId, useState } from "react";
 import { Bug, ExternalLink, Moon, Settings, Sun } from "lucide-react";
 import {
-  DiscordIcon,
-  DISCORD_INVITE_URL,
   GitHubIcon,
   GITHUB_REPO_URL,
   XIcon,
@@ -15,10 +13,9 @@ import Popover, { PopoverContent, PopoverTrigger } from "./Popover";
 import type { Appearance } from "@/lib/theme";
 
 const MENU_LINKS = [
-  { label: "Support / feedback", href: DISCORD_INVITE_URL, Icon: DiscordIcon },
   {
     label: "Report an issue",
-    href: `${GITHUB_REPO_URL}/issues`,
+    href: "mailto:contact@creatorship.pro?subject=coscript%20issue",
     Icon: Bug,
   },
   { label: "Homepage", href: GITHUB_REPO_URL, Icon: GitHubIcon },

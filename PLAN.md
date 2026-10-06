@@ -1,6 +1,6 @@
-# Rescript — Build Plan
+# coscript — Build Plan
 
-Rescript is a fully offline, open-source, transcript-based video editor: upload a
+coscript is a fully offline, open-source, transcript-based video editor: upload a
 video, get a speaker-labelled transcript synced to the timeline, delete words to
 cut the corresponding clip out of the video, and export the result — all in the
 browser, with no server, no auth, and no API calls.

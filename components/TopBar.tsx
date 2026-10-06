@@ -33,7 +33,7 @@ export default function TopBar({ children }: { children?: React.ReactNode }) {
       >
         <Image
           src={logo}
-          alt="Rescript"
+          alt="coscript"
           width={18}
           height={18}
           priority
@@ -41,7 +41,7 @@ export default function TopBar({ children }: { children?: React.ReactNode }) {
         />
       </button>
       <span className="text-sm font-semibold tracking-tight text-zinc-800 dark:text-zinc-100">
-        Rescript
+        coscript
       </span>
 
       {videoFile && (

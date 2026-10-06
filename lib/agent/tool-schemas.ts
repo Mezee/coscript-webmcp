@@ -80,7 +80,7 @@ export const agentToolSchemas: Record<string, AgentToolSchema> = {
 /** Journey-oriented public surface registered with WebMCP. Legacy command schemas remain above for direct callers. */
 export const nativeToolSchemas: Record<string, AgentToolSchema> = {
   list_recent_projects: {
-    description: "List locally saved ReScript projects while the upload screen is visible. Returns project IDs and display metadata without opening or changing a project.",
+    description: "List locally saved coscript projects while the upload screen is visible. Returns project IDs and display metadata without opening or changing a project.",
     inputSchema: emptyInput,
   },
   open_recent_project: {
@@ -163,7 +163,7 @@ export const nativeToolSchemas: Record<string, AgentToolSchema> = {
     },
   },
   open_export_confirmation: {
-    description: "Open Rescript's visible export confirmation dialog with the requested video settings while the ready editor is unobstructed. Returns the selected settings; rendering starts only if the user presses Export in the dialog.",
+    description: "Open coscript's visible export confirmation dialog with the requested video settings while the ready editor is unobstructed. Returns the selected settings; rendering starts only if the user presses Export in the dialog.",
     inputSchema: agentToolSchemas.export_video.inputSchema,
   },
 };

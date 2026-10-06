@@ -1,6 +1,6 @@
 # Roadmap
 
-User-facing progress for Rescript. Items are marked done when they shipped to
+User-facing progress for coscript. Items are marked done when they shipped to
 `main` (web and/or desktop). Internal refactors and CI-only work are omitted.
 
 ## Done
@@ -56,7 +56,7 @@ User-facing progress for Rescript. Items are marked done when they shipped to
 - [x] Transcript scroll rail with tick marks and edge fades
 - [x] Light / Dark appearance in Settings (persisted; default light)
 - [x] Settings menu (appearance + community / support links)
-- [x] Social links (Discord, X, GitHub)
+- [x] Social links (X, GitHub)
 - [x] Mobile menus stay on-screen (Floating UI flip / shift)
 - [x] Smoother transcript text selection while dragging
 - [x] Spacebar play / pause reliability and media-control polish

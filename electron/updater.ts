@@ -43,7 +43,7 @@ export function initAutoUpdater(): void {
       defaultId: 0,
       cancelId: 1,
       title: "Update available",
-      message: `Rescript ${info.version} is ready to install.`,
+      message: `coscript ${info.version} is ready to install.`,
       detail: "Restart now to apply the update.",
     };
     const win = BrowserWindow.getFocusedWindow();

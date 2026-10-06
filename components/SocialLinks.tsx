@@ -1,6 +1,5 @@
-export const GITHUB_REPO_URL = "https://github.com/wassgha/rescript";
-export const DISCORD_INVITE_URL = "https://discord.gg/qJAhYFydat";
-export const X_PROFILE_URL = "https://x.com/wassgha";
+export const GITHUB_REPO_URL = "https://github.com/Mezee/coscript-webmcp";
+export const X_PROFILE_URL = "https://x.com/Chimezee";
 
 export function GitHubIcon({ size }: { size: number }) {
   return (
@@ -52,12 +51,6 @@ const LINKS = [
     Icon: GitHubIcon,
   },
   {
-    label: "Discord",
-    href: DISCORD_INVITE_URL,
-    ariaLabel: "Discord server",
-    Icon: DiscordIcon,
-  },
-  {
     label: "X",
     href: X_PROFILE_URL,
     ariaLabel: "X profile",
@@ -65,7 +58,7 @@ const LINKS = [
   },
 ];
 
-/** Compact links to the repo, Discord, and X — icons for the editor bar, labeled for the upload footer. */
+/** Compact links to the repo and X — icons for the editor bar, labeled for the upload footer. */
 export default function SocialLinks({
   variant = "icon",
 }: {

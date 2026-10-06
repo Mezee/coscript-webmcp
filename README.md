@@ -1,17 +1,16 @@
 <p align="center">
-  <img src="./screenshots/logo.png" alt="Rescript logo" width="96" /><br/>
+  <img src="./screenshots/logo.png" alt="coscript logo" width="96" /><br/>
   Edit video and audio like you edit text — fully offline, on your device.
 </p>
 
-# rescript.
-[![Join the Discord](https://img.shields.io/badge/Discord-Join%20the%20server-5865F2?logo=discord&logoColor=white)](https://discord.gg/qJAhYFydat)
-[![Follow @wassgha on X](https://img.shields.io/badge/Follow%20@wassgha-000000?logo=x&logoColor=white)](https://x.com/wassgha)
+# coscript.
+[![Follow @Chimezee on X](https://img.shields.io/badge/Follow%20@Chimezee-000000?logo=x&logoColor=white)](https://x.com/Chimezee)
 
-**✨ Try it in the browser [wassgha.github.io/rescript](https://wassgha.github.io/rescript/)** or download the [Desktop App](#download)
+**✨ Try it in the browser [coscript-webmcp.vercel.app](https://coscript-webmcp.vercel.app/)** or download the [Desktop App](#download)
 
-[![Rescript Demo](./screenshots/rescript.png)](https://wassgha.github.io/rescript/)
+[![coscript Demo](./screenshots/rescript.png)](https://coscript-webmcp.vercel.app/)
 
-Rescript is an open-source, transcript-based media editor. Drop in a video or
+coscript is an open-source, transcript-based media editor. Drop in a video or
 audio file and it is transcribed locally with per-word timestamps and speaker
 labels. Delete words in the transcript and the corresponding clip is cut from
 the media. Export the final cut — without your file ever leaving your device.
@@ -20,13 +19,13 @@ the media. Export the final cut — without your file ever leaving your device.
 
 <div align="center">
 
-<a href="https://github.com/wassgha/rescript/releases/latest/download/Rescript-mac-arm64.dmg"><img src="assets/download/download-macos-arm64.svg" alt="Download for macOS — Apple Silicon" height="48"></a> &nbsp; <a href="https://github.com/wassgha/rescript/releases/latest/download/Rescript-mac-x64.dmg"><img src="assets/download/download-macos-x64.svg" alt="Download for macOS — Intel" height="48"></a> &nbsp; <a href="https://github.com/wassgha/rescript/releases/latest/download/Rescript-Setup.exe"><img src="assets/download/download-windows.svg" alt="Download for Windows" height="48"></a> &nbsp; <a href="https://github.com/wassgha/rescript/releases/latest/download/Rescript-linux.AppImage"><img src="assets/download/download-linux-appimage.svg" alt="Download the AppImage for Linux" height="48"></a>
+<a href="https://github.com/Mezee/coscript-webmcp/releases/latest/download/coscript-mac-arm64.dmg"><img src="assets/download/download-macos-arm64.svg" alt="Download for macOS — Apple Silicon" height="48"></a> &nbsp; <a href="https://github.com/Mezee/coscript-webmcp/releases/latest/download/coscript-mac-x64.dmg"><img src="assets/download/download-macos-x64.svg" alt="Download for macOS — Intel" height="48"></a> &nbsp; <a href="https://github.com/Mezee/coscript-webmcp/releases/latest/download/coscript-Setup.exe"><img src="assets/download/download-windows.svg" alt="Download for Windows" height="48"></a> &nbsp; <a href="https://github.com/Mezee/coscript-webmcp/releases/latest/download/coscript-linux.AppImage"><img src="assets/download/download-linux-appimage.svg" alt="Download the AppImage for Linux" height="48"></a>
 
 </div>
 
-See the [Releases](https://github.com/wassgha/rescript/releases) page. Desktop
+See the [Releases](https://github.com/Mezee/coscript-webmcp/releases) page. Desktop
 builds auto-update from GitHub Releases. Prefer the browser? Use the
-[web app](https://wassgha.github.io/rescript/) — same editor, no install.
+[web app](https://coscript-webmcp.vercel.app/) — same editor, no install.
 
 - 🔒 **Private by design** — no server, no auth, no uploads; all media processing happens on-device
 - 📝 **Word-level editing** — select words, press ⌫, the cut follows the text
@@ -83,7 +82,7 @@ audio track. For desktop packaging, signing, and cutting releases, see
 
 ## How it works
 
-[![Rescript Promo](./screenshots/rescript-2.png)](https://wassgha.github.io/rescript/)
+[![coscript Promo](./screenshots/rescript-2.png)](https://coscript-webmcp.vercel.app/)
 
 1. **Extract** — ffmpeg.wasm decodes the audio track to mono 16 kHz PCM.
 2. **Transcribe** — Whisper runs in a Web Worker with `return_timestamps: "word"`,
@@ -114,8 +113,7 @@ MIT
 [![License: MIT](https://img.shields.io/badge/license-MIT-111?style=flat-square)](LICENSE)
 [![Platforms](https://img.shields.io/badge/platforms-Web%20·%20macOS%20·%20Windows%20·%20Linux-111?style=flat-square)](#download)
 [![Electron](https://img.shields.io/badge/Electron-42-111?style=flat-square&logo=electron&logoColor=9FEAF9)](https://www.electronjs.org/)
-[![Stars](https://img.shields.io/github/stars/wassgha/rescript?style=flat-square&color=111)](https://github.com/wassgha/rescript/stargazers)
-[![Latest release](https://img.shields.io/github/v/release/wassgha/rescript?label=latest%20release&sort=semver&style=flat-square&color=111)](https://github.com/wassgha/rescript/releases/latest)
+[![Stars](https://img.shields.io/github/stars/Mezee/coscript-webmcp?style=flat-square&color=111)](https://github.com/Mezee/coscript-webmcp/stargazers)
+[![Latest release](https://img.shields.io/github/v/release/Mezee/coscript-webmcp?label=latest%20release&sort=semver&style=flat-square&color=111)](https://github.com/Mezee/coscript-webmcp/releases/latest)
 
-Built by [@wassgha](https://x.com/wassgha) — follow along on X for updates, or
-come say hi in the [Discord](https://discord.gg/RCv4gcwE4).
+Built by [@Chimezee](https://x.com/Chimezee) — follow along on X for updates.

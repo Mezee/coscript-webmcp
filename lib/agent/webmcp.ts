@@ -103,11 +103,11 @@ export const agentToolHandlers = {
 
 export async function callAgentTool(name: AgentToolName, input?: unknown): Promise<unknown> {
   const schema = agentToolSchemas[name];
-  if (!schema) throw new Error(`Unknown ReScript tool: ${String(name)}`);
+  if (!schema) throw new Error(`Unknown coscript tool: ${String(name)}`);
   useAgentStore.getState().setActiveOperation(name);
   const activityId = useAgentStore.getState().addEvent({
     title: name,
-    detail: "Running in Rescript…",
+    detail: "Running in coscript…",
     kind: name.startsWith("get_") || name === "search_transcript" ? "read" : "navigation",
     status: "running",
   });
@@ -219,6 +219,6 @@ export const nativeToolHandlers = {
 };
 
 export async function callNativeTool(name: NativeToolName, input?: unknown): Promise<unknown> {
-  if (!nativeToolSchemas[name]) throw new Error(`Unknown ReScript tool: ${String(name)}`);
+  if (!nativeToolSchemas[name]) throw new Error(`Unknown coscript tool: ${String(name)}`);
   return nativeToolHandlers[name](input as never);
 }

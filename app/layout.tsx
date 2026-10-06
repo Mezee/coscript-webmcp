@@ -17,17 +17,17 @@ const geistMono = Geist_Mono({
 
 const basePath = process.env.NEXT_PUBLIC_BASE_PATH ?? "";
 
-const title = "Rescript — edit videos like you edit text";
+const title = "coscript — edit videos like you edit text";
 const description =
   "A fully offline, open-source transcript-based video editor. Transcribe with Whisper, cut by deleting words, export with ffmpeg — on your device.";
 
 export const metadata: Metadata = {
-  metadataBase: new URL("https://wassgha.github.io"),
+  metadataBase: new URL("https://coscript-webmcp.vercel.app"),
   title,
   description,
   openGraph: {
     type: "website",
-    siteName: "Rescript",
+    siteName: "coscript",
     url: `${basePath}/`,
     title,
     description,
@@ -36,7 +36,7 @@ export const metadata: Metadata = {
         url: `${basePath}/og.png`,
         width: 1200,
         height: 630,
-        alt: "Rescript — a transcript-based video editor running in the browser",
+        alt: "coscript — a transcript-based video editor running in the browser",
       },
     ],
   },

@@ -1,4 +1,4 @@
-# Agent-native ReScript MVP
+# Agent-native coscript MVP
 
 This fork adds a semantic agent command layer under `lib/agent/`. The layer reads and edits the existing Zustand editor state without driving DOM controls.
 
@@ -6,7 +6,7 @@ WebMCP registration is owned by the UI that makes each journey valid. The upload
 
 Public tools are journey-oriented rather than command routers and are capped at ten distinct wire names across the document lifecycle. `inspect_project` adapts between processing and ready state, while `navigate_edit_history` advertises only the undo/redo directions currently available. Meaningful transcript changes first create a visible proposal; `review_proposed_edit` appears only while that proposal is current. Export stops at the app's confirmation dialog, and its opener unregisters while the dialog is open. On narrow layouts, proposal tools remain absent because the Agent activity review UI is not visible.
 
-The internal command layer still covers project context, transcript search, selection context, semantic edits, navigation, history, plan proposal/review, and export confirmation. It remains available to Rescript code and tests, but WebMCP exposes only the smaller state-valid journey surface. `apply_edit_plan` remains one undoable internal transaction. Agent transactions and manual editor edits are retained separately in history.
+The internal command layer still covers project context, transcript search, selection context, semantic edits, navigation, history, plan proposal/review, and export confirmation. It remains available to coscript code and tests, but WebMCP exposes only the smaller state-valid journey surface. `apply_edit_plan` remains one undoable internal transaction. Agent transactions and manual editor edits are retained separately in history.
 
 `components/AgentPanel.tsx` is intentionally an activity surface rather than a chatbot. Chat remains in the external agent; the editor shows connection state, recent operations, transactions, a proposed edit plan with Preview / Apply / Reject, and a one-click cleanup action.
 
