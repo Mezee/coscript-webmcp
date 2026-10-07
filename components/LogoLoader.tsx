@@ -2,27 +2,36 @@
 
 import { useId } from "react";
 
-/** Filled silhouette of the coscript mark, used to clip the sliding bars. */
-const R_PATH =
-  "M45.5 44L57 61H4.5C1.71605 60.1158 0.837624 59.04 0 56.5V52V44V35V26.5V17.5V9V4.5C0.902895 2.15806 1.75648 1.08485 4.5 0H37.5C46.5678 1.963 49.8193 4.07203 53.5 9C55.4387 11.5376 56.3089 13.4198 57.5 17.5C57.9279 20.9844 57.8419 22.8121 57.5 26C56.4745 30.0901 55.5524 32.0111 53.5 35C50.039 40.2343 46.4414 42.1446 37.5 44H45.5Z";
+/**
+ * Filled silhouette of the coscript mark, used to clip the sliding bars.
+ *
+ * Traced from the brand asset: a bold "C" open to the right, drawn as an
+ * outer ellipse of 316x378 with a uniform 125 unit stroke, arcing from 38.5°
+ * to 323°. The disc is a separate subpath, offset right of centre.
+ */
+const C_PATH =
+  "M247.3 235.31A316 378 0 1 1 252.37 -227.49L152.54 -152.26A191 253 0 1 0 149.48 157.5Z";
+const DOT = { cx: 55, cy: -5, r: 126 };
 
-const VIEW_W = 58;
-const VIEW_H = 61;
+const VIEW_W = 632;
+const VIEW_H = 756;
 
 // Each row is a pair of rounded bars with a slot between them, both running far
-// past the silhouette so the R's outline never breaks as the pair slides — only
-// the slot travels across, sweeping the logo's cut-outs left and right.
+// past the silhouette so the C's outline never breaks as the pair slides — only
+// the slot travels across, sweeping the mark's cut-outs left and right.
 // Uneven slot centres and widths give every row its own bar lengths, and odd
 // rows run the reversed keyframes so neighbours sweep against each other.
+// The mark is a thin ring, so the slots stay narrow: wider ones punch straight
+// through the C's band and leave the shape unreadable at 44px.
 const SLOTS = [
-  { center: 31, width: 12 },
-  { center: 26, width: 19 },
-  { center: 33, width: 10 },
-  { center: 27, width: 16 },
+  { center: -150, width: 70 },
+  { center: 40, width: 110 },
+  { center: -30, width: 90 },
+  { center: 120, width: 80 },
 ];
-const ROW_GAP = 5.5;
+const ROW_GAP = 68;
 const ROW_HEIGHT = (VIEW_H - (SLOTS.length - 1) * ROW_GAP) / SLOTS.length;
-const OVERHANG = 70;
+const OVERHANG = 760;
 /** Seconds between neighbouring rows, applied as a negative delay so the slots fan out. */
 const ROW_STAGGER = 0.11;
 
@@ -34,7 +43,7 @@ export default function LogoLoader({
   className?: string;
 }) {
   // Ids must be unique per instance, and React's contain colons that trip up url().
-  const clipId = `logo-r-${useId().replace(/:/g, "")}`;
+  const clipId = `logo-c-${useId().replace(/:/g, "")}`;
   const markHeight = size * 0.56;
 
   return (
@@ -47,17 +56,18 @@ export default function LogoLoader({
       <svg
         width={(markHeight * VIEW_W) / VIEW_H}
         height={markHeight}
-        viewBox={`0 0 ${VIEW_W} ${VIEW_H}`}
+        viewBox={`${-VIEW_W / 2} ${-VIEW_H / 2} ${VIEW_W} ${VIEW_H}`}
         fill="none"
       >
         <defs>
           <clipPath id={clipId}>
-            <path d={R_PATH} />
+            <path d={C_PATH} />
+            <circle cx={DOT.cx} cy={DOT.cy} r={DOT.r} />
           </clipPath>
         </defs>
         <g clipPath={`url(#${clipId})`} fill="currentColor">
           {SLOTS.map(({ center, width }, i) => {
-            const y = i * (ROW_HEIGHT + ROW_GAP);
+            const y = -VIEW_H / 2 + i * (ROW_HEIGHT + ROW_GAP);
             const slotStart = center - width / 2;
             return (
               <g

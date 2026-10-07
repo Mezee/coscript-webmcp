@@ -86,14 +86,16 @@ body {
   animation: tl-split-flash 0.42s ease-out;
 }
 
-/* Logo loader: bars slide behind the R silhouette that clips them */
+/* Logo loader: bars slide behind the coscript mark that clips them.
+   The travel is in SVG user units (user space, not screen px), so it is
+   scaled to the mark's viewBox — 632 units wide. */
 @keyframes logo-bar-slide {
   0%,
   100% {
-    transform: translateX(-40px);
+    transform: translateX(-300px);
   }
   50% {
-    transform: translateX(40px);
+    transform: translateX(300px);
   }
 }
 /* The slide is symmetric, so `animation-direction: reverse` would look
@@ -101,10 +103,10 @@ body {
 @keyframes logo-bar-slide-alt {
   0%,
   100% {
-    transform: translateX(40px);
+    transform: translateX(300px);
   }
   50% {
-    transform: translateX(-40px);
+    transform: translateX(-300px);
   }
 }
 .logo-bar {
